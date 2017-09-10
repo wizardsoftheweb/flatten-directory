@@ -206,6 +206,10 @@ describe("DirectoryWalker", (): void => {
         let excludedStub: sinon.SinonStub;
         let posixPath: sinon.SinonStub;
 
+        let posixInclude: sinon.SinonStub;
+        let windowsInclude: sinon.SinonStub;
+        let alwaysInclude: sinon.SinonStub;
+
         beforeEach((): void => {
             excludedStub = sinon.stub(walker as any, "isExcluded");
             posixPath = sinon.stub(walker as any, "createDummyPosixPath")
@@ -232,8 +236,6 @@ describe("DirectoryWalker", (): void => {
         });
 
         describe("Windows", (): void => {
-            let posixInclude: sinon.SinonStub;
-
             beforeEach((): void => {
                 posixInclude = sinon.stub(walker as any, "includeThisFilePosix");
             });
@@ -252,6 +254,95 @@ describe("DirectoryWalker", (): void => {
 
             afterEach((): void => {
                 posixInclude.restore();
+            });
+        });
+
+        describe("MethodFactory", (): void => {
+            let platformStub: sinon.SinonStub;
+            let generateStub: sinon.SinonStub;
+
+            const filename = "input/filename";
+            const exclusions = ["file/to/exclude"];
+
+            beforeEach((): void => {
+                includeStub.restore();
+                platformStub = sinon.stub(process as any, "platform")
+                    .get((): string => {
+                        return "linux";
+                    });
+                generateStub = sinon.stub(walker as any, "generateExcludePatterns");
+                posixInclude = sinon.stub(walker as any, "includeThisFilePosix")
+                    .get(() => {
+                        return (): string => {
+                            return "posix";
+                        };
+                    });
+                windowsInclude = sinon.stub(walker as any, "includeThisFileWindows")
+                    .get(() => {
+                        return (): string => {
+                            return "windows";
+                        };
+                    });
+                alwaysInclude = sinon.stub(walker as any, "includeThisFileAlwaysTrue")
+                    .get(() => {
+                        return (): string => {
+                            return "always";
+                        };
+                    });
+                specificWalkOptions.exclude = exclusions;
+            });
+
+            it("should return AlwaysTrue without exclusions", (): void => {
+                specificWalkOptions.exclude = null as any;
+                const include = (walker as any).includeThisFileMethodFactory(specificWalkOptions);
+                (include as any)(filename).should.equal("always");
+            });
+
+            it("should generate exclude patterns with exclusions", (): void => {
+                (walker as any).includeThisFileMethodFactory(specificWalkOptions);
+                generateStub.calledOnce.should.be.true;
+                generateStub.calledWith(exclusions).should.be.true;
+            });
+
+            it("should return the Posix method for most systems", (): void => {
+                const include = (walker as any).includeThisFileMethodFactory(specificWalkOptions);
+                include(filename).should.equal("posix");
+            });
+
+            it("should return the Windows method for Windows machines", (): void => {
+                platformStub.get((): string => {
+                    return "win32";
+                });
+                const include = (walker as any).includeThisFileMethodFactory(specificWalkOptions);
+                include(filename).should.equal("windows");
+            });
+
+            it("should throw an error if globstars are switched off", (): void => {
+                specificWalkOptions.minimatchOptions = {
+                    noglobstar: true,
+                };
+                (walker as any).includeThisFileMethodFactory
+                .bind(walker, specificWalkOptions)
+                .should.throw(DirectoryWalker.ERROR_NOGLOBSTAR);
+            });
+
+            it("should warn if dotfiles are not checked", (): void => {
+                specificWalkOptions.minimatchOptions = {
+                    dot: true,
+                };
+                (walker as any).includeThisFileMethodFactory(specificWalkOptions);
+                warn.called.should.be.false;
+                specificWalkOptions.minimatchOptions.dot = false;
+                (walker as any).includeThisFileMethodFactory(specificWalkOptions);
+                warn.calledOnce.should.be.true;
+            });
+
+            afterEach((): void => {
+                platformStub.restore();
+                generateStub.restore();
+                posixInclude.restore();
+                windowsInclude.restore();
+                alwaysInclude.restore();
             });
         });
 

@@ -11,7 +11,7 @@ export class DirectoryWalker {
     /** @type {number} Default depth */
     public static DEFAULT_DEPTH: number = 47;
     /** @type {string} Error message to throw when `options.minimatchOptions.noglobstar` is used */
-    public static ERROR_NOGLOBSTART = "DirectoryWalker depends on glob stars; please remove the noglobstar option";
+    public static ERROR_NOGLOBSTAR = "DirectoryWalker depends on glob stars; please remove the noglobstar option";
     /** @type {string} Error message to throw when `options.Logger` is not a `winston.Logger` */
     public static ERROR_NOT_A_WINSTON = `\
 logger must be an instance of winston.Logger (i.e. logger instanceof winston.Logger === true)`;
@@ -46,10 +46,7 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         this.rootDirectory = path.normalize(options.root);
         this.callback = options.callback;
         this.maxDepth = options.maxDepth || DirectoryWalker.DEFAULT_DEPTH;
-        this.includeThisFile = this.includeThisFileMethodFactory(
-            options.exclude || ["node_modules"],
-            options.minimatchOptions,
-        );
+        this.includeThisFile = this.includeThisFileMethodFactory(options);
     }
 
     /**
@@ -168,26 +165,23 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         return this.includeThisFilePosix(this.createDummyPosixPath(filename));
     }
 
-    private includeThisFileMethodFactory(exclude: string[], options?: minimatch.IOptions): TIncludeThisPathFunction {
+    private includeThisFileMethodFactory(options: IWalkOptions): TIncludeThisPathFunction {
+        const exclude = options.exclude || [];
         if (exclude.length < 1) {
             this.logger.verbose("No excludes found; all files included");
             return this.includeThisFileAlwaysTrue;
         }
         this.logger.verbose("Generating minimatch pattern from excludes");
-        if (options) {
-            if (options.noglobstar) {
-                this.logger.error(DirectoryWalker.ERROR_NOGLOBSTART);
-                throw new Error(DirectoryWalker.ERROR_NOGLOBSTART);
-            }
+        const minimatchOptions = options.minimatchOptions || {};
+        if (minimatchOptions.noglobstar === true) {
+            this.logger.error(DirectoryWalker.ERROR_NOGLOBSTAR);
+            throw new Error(DirectoryWalker.ERROR_NOGLOBSTAR);
         }
-        if (options && options.dot && options.dot === true) {
-            this.logger.warn("Dotfiles will be included as they are not excluded from minimatch (dot is true)");
-        } else {
-            this.logger.warn("Dotfiles will ignored as they are excluded from minimatch (dot is false/undefined)");
-            exclude.push(".*");
+        if (minimatchOptions.dot !== true) {
+            this.logger.warn("Dotfiles will be included as they are not checked in minimatch (dot is false/undefined)");
         }
         // Prepends the root directory (with glob stars) to each exclude
-        this.generateExcludePatterns(exclude, options);
+        this.generateExcludePatterns(exclude, minimatchOptions);
         if (/win/.test(process.platform)) {
             return this.includeThisFileWindows;
         }
