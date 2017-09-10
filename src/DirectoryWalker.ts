@@ -196,6 +196,15 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         return this.includeThisFilePosix;
     }
 
+    /**
+     * Populates the `excluded` array with `minimatch` instances corresponding
+     * to each element of the passed-in array.
+     *
+     * @param {string[]}           exclude
+     * Array of patterns to exclude
+     * @param {minimatch.IOptions} options
+     * Options to pass through to each `minimatch` instance
+     */
     private generateExcludePatterns(exclude: string[], options?: minimatch.IOptions): void {
         this.logger.verbose("Prepending **/ to all excluded paths");
         this.excluded = exclude.map((value: string) => {

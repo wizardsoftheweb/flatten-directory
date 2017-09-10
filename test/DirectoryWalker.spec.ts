@@ -8,6 +8,7 @@ import * as sinon from "sinon";
 const expect = chai.expect;
 const should = chai.should();
 
+import * as minimatch from "minimatch";
 import * as path from "path";
 import * as winston from "winston";
 
@@ -44,6 +45,7 @@ describe("DirectoryWalker", (): void => {
         root: "root/directory",
     };
     let specificWalkOptions: IWalkOptions;
+    const exclusions = ["file1/to/exclude", "file2/to/exclude"];
 
     let walker: DirectoryWalker;
 
@@ -262,7 +264,6 @@ describe("DirectoryWalker", (): void => {
             let generateStub: sinon.SinonStub;
 
             const filename = "input/filename";
-            const exclusions = ["file/to/exclude"];
 
             beforeEach((): void => {
                 includeStub.restore();
@@ -349,6 +350,17 @@ describe("DirectoryWalker", (): void => {
         afterEach((): void => {
             excludedStub.restore();
             posixPath.restore();
+        });
+    });
+
+    describe("generateExcludePatterns", (): void => {
+        it("should create a minimatch for each exclusion", (): void => {
+            (walker as any).generateExcludePatterns(exclusions);
+            const excluded = (walker as any).excluded;
+            excluded.should.be.an("array").of.length(2);
+            excluded.should.deep.equal(exclusions.map((value: string) => {
+                return new minimatch.Minimatch(`**/${value}`);
+            }));
         });
     });
 
