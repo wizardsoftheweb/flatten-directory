@@ -41,8 +41,11 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
     private includeThisFile: TIncludeThisPathFunction;
 
     /**
-     * [constructor description]
-     * @param {IWalkOptions} options [description]
+     * Validates and assigns options.
+     *
+     * @param {IWalkOptions} options
+     * The `IWalkOptions` object to parse
+     * @todo Warn on `maxdepth === 0`
      */
     constructor(options: IWalkOptions) {
         this.validateOrCreateLogger(options);
