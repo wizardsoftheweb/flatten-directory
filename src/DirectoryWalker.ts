@@ -131,14 +131,39 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         return new (winston.Logger)(winstonOptions);
     }
 
+    /**
+     * Accepts any filename as an included file.
+     *
+     * @param  {string}  filename
+     * The path of the file to check
+     * @return {boolean}
+     * Always true
+     */
     private includeThisFileAlwaysTrue(filename: string): boolean {
         return true;
     }
 
-    private includeThisFilePosix(filename: string) {
+    /**
+     * Checks the given filename against the list of exclusions.
+     *
+     * @param {string} filename
+     * The path of the file to check
+     * @return {boolean}
+     * True if the file is not excluded; false otherwise
+     */
+    private includeThisFilePosix(filename: string): boolean {
         return !this.isExcluded(filename);
     }
 
+    /**
+     * Converts the given Windows path to a dummy Posix path and checks it
+     * against the list of exclusions.
+     *
+     * @param  {string}  filename
+     * The path of the file to check
+     * @return {boolean}
+     * True if the file is not excluded; false otherwise
+     */
     private includeThisFileWindows(filename: string): boolean {
         return this.includeThisFilePosix(this.createDummyPosixPath(filename));
     }

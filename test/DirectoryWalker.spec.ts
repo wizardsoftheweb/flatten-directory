@@ -181,7 +181,7 @@ describe("DirectoryWalker", (): void => {
             call.args.should.be.an("array").that.is.not.empty;
             const args = call.args[0];
             args.transports.should.be.an("array").of.length(1);
-            args.transports[0].should.deep.equal({from: "File"});
+            args.transports[0].should.deep.equal({ from: "File" });
         });
 
         it("should add a console transport if a level is included", (): void => {
@@ -192,13 +192,72 @@ describe("DirectoryWalker", (): void => {
             call.args.should.be.an("array").that.is.not.empty;
             const args = call.args[0];
             args.transports.should.be.an("array").of.length(1);
-            args.transports[0].should.deep.equal({from: "Console"});
+            args.transports[0].should.deep.equal({ from: "Console" });
         });
 
         afterEach((): void => {
             fileStub.restore();
             consoleStub.restore();
             loggerStub.restore();
+        });
+    });
+
+    describe("includeThisFile", (): void => {
+        let excludedStub: sinon.SinonStub;
+        let posixPath: sinon.SinonStub;
+
+        beforeEach((): void => {
+            excludedStub = sinon.stub(walker as any, "isExcluded");
+            posixPath = sinon.stub(walker as any, "createDummyPosixPath")
+                .returns("posix");
+        });
+
+        describe("AlwaysTrue", (): void => {
+            it("should always be true", (): void => {
+                (walker as any).includeThisFileAlwaysTrue()
+                    .should.be.true;
+                (walker as any).includeThisFileAlwaysTrue(Math.random())
+                    .should.be.true;
+                (walker as any).includeThisFileAlwaysTrue("qqq")
+                    .should.be.true;
+            });
+        });
+
+        describe("Posix", (): void => {
+            it("should check exclusions", (): void => {
+                (walker as any).includeThisFilePosix("posix");
+                excludedStub.calledOnce.should.be.true;
+                excludedStub.calledWith("posix").should.be.true;
+            });
+        });
+
+        describe("Windows", (): void => {
+            let posixInclude: sinon.SinonStub;
+
+            beforeEach((): void => {
+                posixInclude = sinon.stub(walker as any, "includeThisFilePosix");
+            });
+
+            it("should convert to a dummy posix path", (): void => {
+                (walker as any).includeThisFileWindows("windows");
+                posixPath.calledOnce.should.be.true;
+                posixPath.calledWith("windows").should.be.true;
+            });
+
+            it("should check exclusions", (): void => {
+                (walker as any).includeThisFileWindows("windows");
+                posixInclude.calledOnce.should.be.true;
+                posixInclude.calledWith("posix").should.be.true;
+            });
+
+            afterEach((): void => {
+                posixInclude.restore();
+            });
+        });
+
+        afterEach((): void => {
+            excludedStub.restore();
+            posixPath.restore();
         });
     });
 
