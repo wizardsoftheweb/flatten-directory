@@ -13,12 +13,12 @@
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.5.0",
-    "glob": "^7.1.2"
+    "minimatch": "^3.0.4"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.10",
     "@types/chai": "^4.0.4",
-    "@types/glob": "^5.0.32",
+    "@types/minimatch": "^3.0.1",
     "@types/mocha": "^2.2.43",
     "@types/node": "^8.0.28",
     "@types/sinon": "^2.3.3",
