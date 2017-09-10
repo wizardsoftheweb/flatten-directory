@@ -212,9 +212,19 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         });
     }
 
+    /**
+     * Checks a filename against all the excluded patterns.
+     *
+     * @param  {string}  filename
+     * The path to the file to check
+     * @return {boolean}
+     * True if there's a hit from `excluded`; false otherwise
+     */
     private isExcluded(filename: string): boolean {
         for (const pattern of this.excluded) {
             this.logger.debug(`Testing ${pattern.pattern} against ${filename}`);
+            // The else branch is covered outside the for loop
+            /* istanbul ignore else */
             if (pattern.match(filename)) {
                 return true;
             }

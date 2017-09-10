@@ -364,6 +364,19 @@ describe("DirectoryWalker", (): void => {
         });
     });
 
+    describe("isExcluded", (): void => {
+        it("should return true for excluded files", (): void => {
+            (walker as any).excluded = exclusions.map((value: string) => {
+                return new minimatch.Minimatch(`**/${value}`);
+            });
+            (walker as any).isExcluded(exclusions[0]).should.be.true;
+        });
+
+        it("should return false for files that are not excluded", (): void => {
+            (walker as any).isExcluded(exclusions[0]).should.be.false;
+        });
+    });
+
     afterEach((): void => {
         restoreLogger();
         validateStub.restore();
