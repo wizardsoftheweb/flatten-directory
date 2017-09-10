@@ -165,6 +165,14 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         return this.includeThisFilePosix(this.createDummyPosixPath(filename));
     }
 
+    /**
+     * Returns the correct `includeThisFile` method based on the options.
+     *
+     * @param  {IWalkOptions}             options [description]
+     * `IWalkOptions` from the `constructor`
+     * @return {TIncludeThisPathFunction}
+     * The correct inclusion method
+     */
     private includeThisFileMethodFactory(options: IWalkOptions): TIncludeThisPathFunction {
         const exclude = options.exclude || [];
         if (exclude.length < 1) {
