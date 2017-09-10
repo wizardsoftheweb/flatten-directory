@@ -6,20 +6,40 @@ import * as winston from "winston";
 import { IWalkOptions, TFileCallback, TIncludeThisPathFunction } from "./interfaces";
 
 export class DirectoryWalker {
+    /** @type {string[]} Default files/directories to exclude */
     public static DEFAULT_EXCLUDE = ["node_modules"];
+    /** @type {number} Default depth */
     public static DEFAULT_DEPTH: number = 47;
+    /** @type {string} Error message to throw when `options.minimatchOptions.noglobstar` is used */
     public static ERROR_NOGLOBSTART = "DirectoryWalker depends on glob stars; please remove the noglobstar option";
+    /** @type {string} Error message to throw when `options.Logger` is not a `winston.Logger` */
     public static ERROR_NOT_A_WINSTON = `\
 logger must be an instance of winston.Logger (i.e. logger instanceof winston.Logger === true)`;
 
+    /** @type {TFileCallback} Callback to run on each file */
     private callback: TFileCallback;
+    /** @type {number} The maximum depth this walker will descend */
     private maxDepth: number;
+    /** @type {string} The normalized root path */
     private rootDirectory: string;
+    /** @type {winston.LoggerInstance} The logger to use */
     private logger: winston.LoggerInstance;
 
+    /** @type {minimatch.IMinimatch[]} The array (possibly empty) of all minimatch patterns */
     private excluded: minimatch.IMinimatch[] = [];
+    /**
+     * Checks whether or not an individual path should be included.
+     * @param {string} filename
+     * Path to run against `excluded`
+     * @returns {boolean}
+     * False if the file matches anything in `excluded`; true otherwise
+     */
     private includeThisFile: TIncludeThisPathFunction;
 
+    /**
+     * [constructor description]
+     * @param {IWalkOptions} options [description]
+     */
     constructor(options: IWalkOptions) {
         this.validateOrAssignLogger(options);
         this.logger.info("Preparing DirectoryWalker");
@@ -108,12 +128,12 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         // Prepends the root directory (with glob stars) to each exclude
         this.generateExcludePatterns(exclude, options);
         if (/win/.test(process.platform)) {
-            return (filePath: string) => {
-                return !this.isExcluded(this.createDummyPosixPath(filePath));
+            return (filename: string) => {
+                return !this.isExcluded(this.createDummyPosixPath(filename));
             };
         }
-        return (filePath: string) => {
-            return !this.isExcluded(filePath);
+        return (filename: string) => {
+            return !this.isExcluded(filename);
         };
     }
 
@@ -124,10 +144,10 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         }
     }
 
-    private isExcluded(filePath: string): boolean {
+    private isExcluded(filename: string): boolean {
         for (const pattern of this.excluded) {
-            this.logger.debug(`Testing ${pattern.pattern} against ${filePath}`);
-            if (pattern.match(filePath)) {
+            this.logger.debug(`Testing ${pattern.pattern} against ${filename}`);
+            if (pattern.match(filename)) {
                 return true;
             }
         }
