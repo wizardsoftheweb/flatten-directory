@@ -9,7 +9,7 @@ export class DirectoryWalker {
     /** @type {string[]} Default files/directories to exclude */
     public static DEFAULT_EXCLUDE = ["node_modules"];
     /** @type {number} Default depth */
-    public static DEFAULT_DEPTH: number = 47;
+    public static DEFAULT_MAXDEPTH: number = 47;
     /** @type {string} Error message to throw when `options.minimatchOptions.noglobstar` is used */
     public static ERROR_NOGLOBSTAR = "DirectoryWalker depends on glob stars; please remove the noglobstar option";
     /** @type {string} Error message to throw when `options.Logger` is not a `winston.Logger` */
@@ -18,8 +18,12 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
 
     /** @type {TFileCallback} Callback to run on each file */
     private callback: TFileCallback;
-    /** @type {number} The maximum depth this walker will descend */
-    private maxDepth: number;
+    /**
+     * The maximum depth this walker will descend
+     * @type {number}
+     * @see `man --pager='less -p "-maxdepth levels"' find`
+     */
+    private maxdepth: number;
     /** @type {string} The normalized root path */
     private rootDirectory: string;
     /** @type {winston.LoggerInstance} The logger to use */
@@ -45,7 +49,7 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         this.logger.info("Preparing DirectoryWalker");
         this.rootDirectory = path.normalize(options.root);
         this.callback = options.callback;
-        this.maxDepth = options.maxDepth || DirectoryWalker.DEFAULT_DEPTH;
+        this.maxdepth = options.maxdepth || DirectoryWalker.DEFAULT_MAXDEPTH;
         this.includeThisFile = this.includeThisFileMethodFactory(options);
     }
 
@@ -232,8 +236,17 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         return false;
     }
 
+    /**
+     * Convenience method to check if the provided `depth` is less than or
+     * equal to the maximum depth.
+     *
+     * @param  {number}  depth
+     * Directory depth
+     * @return {boolean}
+     * @see `man --pager='less -p "-maxdepth levels"' find`
+     */
     private checkDepth(depth: number): boolean {
-        return depth <= this.maxDepth;
+        return depth <= this.maxdepth;
     }
 
     private createDummyPosixPath(windowsPath: string): string {

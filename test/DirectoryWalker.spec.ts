@@ -79,7 +79,7 @@ describe("DirectoryWalker", (): void => {
         });
 
         it("should assign default maxDepth with nothing passed in", (): void => {
-            (walker as any).maxDepth.should.equal(DirectoryWalker.DEFAULT_DEPTH);
+            (walker as any).maxdepth.should.equal(DirectoryWalker.DEFAULT_MAXDEPTH);
         });
 
         afterEach((): void => {
@@ -374,6 +374,15 @@ describe("DirectoryWalker", (): void => {
 
         it("should return false for files that are not excluded", (): void => {
             (walker as any).isExcluded(exclusions[0]).should.be.false;
+        });
+    });
+
+    describe("checkDepth", (): void => {
+        it("should check depth against maxdepth", (): void => {
+            let depth = DirectoryWalker.DEFAULT_MAXDEPTH - 10;
+            (walker as any).checkDepth(depth).should.be.true;
+            depth = DirectoryWalker.DEFAULT_MAXDEPTH + 1;
+            (walker as any).checkDepth(depth).should.be.false;
         });
     });
 

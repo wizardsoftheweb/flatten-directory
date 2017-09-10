@@ -15,7 +15,12 @@ export interface IWalkOptions {
     root: string;
     callback: TFileCallback;
     logFile?: string;
-    maxDepth?: number;
+    /**
+     * The maximum depth this walker will descend
+     * @type {number}
+     * @see `man --pager='less -p "-maxdepth levels"' find`
+     */
+    maxdepth?: number;
     npmLogLevel?: winston.NPMLoggingLevel;
     exclude?: string[];
     minimatchOptions?: minimatch.IOptions;
