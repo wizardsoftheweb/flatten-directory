@@ -249,15 +249,22 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         return depth <= this.maxdepth;
     }
 
+    /**
+     * Given a Windows path, strip the drive letter (leaving the path relative)
+     * and replace all forward slashes with back slashes
+     * @param  {string} windowsPath
+     * The path to process
+     * @return {string}
+     * A path that can be interpreted as a relative Posix path.
+     */
     private createDummyPosixPath(windowsPath: string): string {
         windowsPath = windowsPath
             // strip leading drive letter and remove root designator
-            .replace(/^.*:\\+/, "")
+            .replace(/^[^:]*:\\+/, "")
             // convert to Posix directory separator
             .replace(/\\+/g, "/");
         this.logger.silly(`Dummy posix path: ${windowsPath}`);
         return windowsPath;
-
     }
 
     private recursiveWalkAndCall(initialPath: string, depth: number = -1): void {

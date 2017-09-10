@@ -386,6 +386,26 @@ describe("DirectoryWalker", (): void => {
         });
     });
 
+    describe("createDummyPosixPath", (): void => {
+        const windowsPath = "C:\\directory\\subdirectory\\file.ext";
+        const desiredPath = path.posix.parse("directory/subdirectory/file.ext");
+
+        it("should strip the drive designator if it exists", (): void => {
+            const dummy = (walker as any).createDummyPosixPath(windowsPath);
+            /^directory/.test(dummy).should.be.true;
+        });
+
+        it("should replace forward slashes with back slashes", (): void => {
+            const dummy = (walker as any).createDummyPosixPath(windowsPath);
+            dummy.split("/").length.should.equal(3);
+        });
+
+        it("should parse to the desired path", (): void => {
+            const dummy = (walker as any).createDummyPosixPath(windowsPath);
+            path.parse(dummy).should.deep.equal(desiredPath);
+        });
+    });
+
     afterEach((): void => {
         restoreLogger();
         validateStub.restore();
