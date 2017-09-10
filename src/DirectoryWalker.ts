@@ -41,7 +41,7 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
      * @param {IWalkOptions} options [description]
      */
     constructor(options: IWalkOptions) {
-        this.validateOrAssignLogger(options);
+        this.validateOrCreateLogger(options);
         this.logger.info("Preparing DirectoryWalker");
         this.rootDirectory = path.normalize(options.root);
         this.callback = options.callback;
@@ -82,7 +82,14 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         }
     }
 
-    private validateOrAssignLogger(options: IWalkOptions) {
+    /**
+     * Simple switch method to either validate a passed-in `logger` or create a
+     * new instance.
+     *
+     * @param {IWalkOptions} options
+     * `IWalkOptions` from the `constructor`.
+     */
+    private validateOrCreateLogger(options: IWalkOptions) {
         if (typeof options.logger !== "undefined") {
             this.validateInjectedLogger(options);
         } else {
