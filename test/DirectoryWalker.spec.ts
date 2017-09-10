@@ -64,19 +64,19 @@ describe("DirectoryWalker", (): void => {
             newDirectoryWalker();
         });
 
-        it("should assign its logger", (): any => {
+        it("should assign its logger", (): void => {
             validateStub.called.should.be.true;
         });
 
-        it("should generate its inclusion factory", (): any => {
+        it("should generate its inclusion factory", (): void => {
             includeStub.called.should.be.true;
         });
 
-        it("should assign normalize the root path", (): any => {
+        it("should assign normalize the root path", (): void => {
             normalizeStub.called.should.be.true;
         });
 
-        it("should assign default maxDepth with nothing passed in", (): any => {
+        it("should assign default maxDepth with nothing passed in", (): void => {
             (walker as any).maxDepth.should.equal(DirectoryWalker.DEFAULT_DEPTH);
         });
 
@@ -86,7 +86,7 @@ describe("DirectoryWalker", (): void => {
     });
 
     describe("validateInjectedLogger", (): void => {
-        it("should ensure the logger is a winston.Logger", (): any => {
+        it("should ensure the logger is a winston.Logger", (): void => {
             specificWalkOptions.logger = "" as any;
             (walker as any).validateInjectedLogger.bind(walker, specificWalkOptions)
                 .should.throw(DirectoryWalker.ERROR_NOT_A_WINSTON);
@@ -95,14 +95,14 @@ describe("DirectoryWalker", (): void => {
                 .should.not.throw;
         });
 
-        it("should warn if a log path is passed in", (): any => {
+        it("should warn if a log path is passed in", (): void => {
             specificWalkOptions.logFile = "qqq";
             specificWalkOptions.logger = realLogger;
             (walker as any).validateInjectedLogger(specificWalkOptions);
             warn.called.should.be.true;
         });
 
-        it("should warn if a log level is passed in", (): any => {
+        it("should warn if a log level is passed in", (): void => {
             specificWalkOptions.npmLogLevel = "silly";
             specificWalkOptions.logger = realLogger;
             (walker as any).validateInjectedLogger(specificWalkOptions);
@@ -122,13 +122,13 @@ describe("DirectoryWalker", (): void => {
                 .returns(realLogger);
         });
 
-        it("should ensure the logger is a winston.Logger", (): any => {
+        it("should ensure the logger is a winston.Logger", (): void => {
             specificWalkOptions.logger = realLogger;
             (walker as any).validateOrCreateLogger(specificWalkOptions);
             validateLoggerStub.called.should.be.true;
         });
 
-        it("should warn if other log options are set", (): any => {
+        it("should warn if other log options are set", (): void => {
             (walker as any).validateOrCreateLogger(specificWalkOptions);
             buildStub.called.should.be.true;
         });
@@ -136,6 +136,34 @@ describe("DirectoryWalker", (): void => {
         afterEach((): void => {
             validateStub.restore();
             buildStub.restore();
+        });
+    });
+
+    describe("buildLoggerInstance", (): void => {
+        let fileStub: sinon.SinonStub;
+        let consoleStub: sinon.SinonStub;
+        let loggerStub: sinon.SinonStub;
+
+        beforeEach((): void => {
+            fileStub = sinon.stub(winston.transports as any, "File")
+                .returns({});
+            consoleStub = sinon.stub(winston.transports as any, "Console")
+                .returns({});
+            loggerStub = sinon.stub(winston, "Logger")
+                .returns({});
+        });
+
+        it("should default to an empty logger", (): void => {
+            (walker as any).buildLoggerInstance(specificWalkOptions);
+            fileStub.called.should.be.false;
+            consoleStub.called.should.be.false;
+            loggerStub.calledWith({transports: []}).should.be.true;
+        });
+
+        afterEach((): void => {
+            fileStub.restore();
+            consoleStub.restore();
+            loggerStub.restore();
         });
     });
 
