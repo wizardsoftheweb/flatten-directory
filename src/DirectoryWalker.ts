@@ -186,7 +186,7 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
             throw new Error(DirectoryWalker.ERROR_NOGLOBSTAR);
         }
         if (minimatchOptions.dot !== true) {
-            this.logger.warn("Dotfiles will be included as they are not checked in minimatch (dot is false/undefined)");
+            this.logger.warn("Dotfiles will be included as they are ignored in minimatch (dot is false/undefined)");
         }
         // Prepends the root directory (with glob stars) to each exclude
         this.generateExcludePatterns(exclude, minimatchOptions);
