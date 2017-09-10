@@ -47,13 +47,16 @@ describe("DirectoryWalker", (): void => {
 
     beforeEach((): void => {
         stubLogger();
+        validateStub = sinon
+            .stub(DirectoryWalker.prototype as any, "validateOrAssignLogger");
+        includeStub = sinon
+            .stub(DirectoryWalker.prototype as any, "includeThisFileMethodFactory");
+        newDirectoryWalker();
     });
 
     describe("constructor", (): void => {
         beforeEach((): void => {
             stubPath();
-            validateStub = sinon.stub(DirectoryWalker.prototype as any, "validateOrAssignLogger")
-            includeStub = sinon.stub(DirectoryWalker.prototype as any, "includeThisFileMethodFactory");
             newDirectoryWalker();
         });
 
@@ -75,13 +78,36 @@ describe("DirectoryWalker", (): void => {
 
         afterEach((): void => {
             restorePath();
-            validateStub.restore();
-            includeStub.restore();
+        });
+    });
+
+    describe("validateInjectedLogger", (): void => {
+        let options: IWalkOptions;
+        const realLogger = new (winston.Logger)();
+
+        it("should ensure the logger is a winston.Logger", (): any => {
+            options = basicOptions;
+            options.logger = "" as any;
+            (walker as any).validateInjectedLogger.bind(walker, options)
+                .should.throw(DirectoryWalker.ERROR_NOT_A_WINSTON);
+            options.logger = realLogger;
+            (walker as any).validateInjectedLogger.bind(walker, options)
+                .should.not.throw;
+        });
+
+        it("should warn if other log options are set", (): any => {
+            options = basicOptions;
+            options.logFile = "qqq";
+            options.logger = realLogger;
+            (walker as any).validateInjectedLogger(options);
+            warn.called.should.be.true;
         });
     });
 
     afterEach((): void => {
         restoreLogger();
+        validateStub.restore();
+        includeStub.restore();
         walker = null as any;
     });
 
@@ -91,9 +117,14 @@ describe("DirectoryWalker", (): void => {
                 (mockLogger[stub] as any).reset();
             }
         }
-        prototypeLoggerStub = sinon.stub(DirectoryWalker.prototype as any, "logger").get(() => {
-            return mockLogger;
-        });
+        prototypeLoggerStub = sinon
+            .stub(DirectoryWalker.prototype as any, "logger")
+            .get(() => {
+                return mockLogger;
+            })
+            .set((value: any) => {
+                // do nothing
+            });
     }
 
     function restoreLogger(): void {

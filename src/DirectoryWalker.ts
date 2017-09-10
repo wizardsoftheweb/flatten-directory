@@ -63,6 +63,12 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         this.logger.info(`Finished walking ${this.rootDirectory}`);
     }
 
+    /**
+     * Validates the injected walker by running `instanceof`. If extra log
+     * options are set, warns that they will be ignored
+     * @param {IWalkOptions} options
+     * `IWalkOptions` from the `constructor`.
+     */
     private validateInjectedLogger(options: IWalkOptions): void {
         if (options.logger instanceof winston.Logger) {
             this.logger = options.logger;
