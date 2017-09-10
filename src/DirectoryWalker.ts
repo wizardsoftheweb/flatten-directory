@@ -52,6 +52,11 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         );
     }
 
+    /**
+     * Public convenience method to walk the directory.
+     * @see `recursiveWalkAndCall`
+     */
+    /* istanbul ignore next */
     public walk(): void {
         this.logger.info(`Walking ${this.rootDirectory}`);
         this.recursiveWalkAndCall(this.rootDirectory);
