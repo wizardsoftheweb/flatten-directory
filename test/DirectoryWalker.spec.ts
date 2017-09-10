@@ -140,24 +140,59 @@ describe("DirectoryWalker", (): void => {
     });
 
     describe("buildLoggerInstance", (): void => {
+        let constructorStub: sinon.SinonStub;
         let fileStub: sinon.SinonStub;
         let consoleStub: sinon.SinonStub;
         let loggerStub: sinon.SinonStub;
 
         beforeEach((): void => {
+            constructorStub = sinon.stub()
+                .callsFake((input: any) => {
+                    /* tslint:disable-next-line:no-construct */
+                    return { from: input.filename || "Console" };
+                });
             fileStub = sinon.stub(winston.transports as any, "File")
-                .returns({});
+                .get(() => {
+                    return constructorStub;
+                });
             consoleStub = sinon.stub(winston.transports as any, "Console")
-                .returns({});
+                .get(() => {
+                    return constructorStub;
+                });
             loggerStub = sinon.stub(winston, "Logger")
                 .returns({});
         });
 
         it("should default to an empty logger", (): void => {
             (walker as any).buildLoggerInstance(specificWalkOptions);
-            fileStub.called.should.be.false;
-            consoleStub.called.should.be.false;
-            loggerStub.calledWith({transports: []}).should.be.true;
+            constructorStub.called.should.be.false;
+            loggerStub.calledOnce.should.be.true;
+            const call = loggerStub.getCall(0);
+            call.args.should.be.an("array").that.is.not.empty;
+            const args = call.args[0];
+            args.transports.should.be.an("array").that.is.empty;
+        });
+
+        it("should add a file transport if a path is included", (): void => {
+            specificWalkOptions.logFile = "File";
+            (walker as any).buildLoggerInstance(specificWalkOptions);
+            loggerStub.calledOnce.should.be.true;
+            const call = loggerStub.getCall(0);
+            call.args.should.be.an("array").that.is.not.empty;
+            const args = call.args[0];
+            args.transports.should.be.an("array").of.length(1);
+            args.transports[0].should.deep.equal({from: "File"});
+        });
+
+        it("should add a console transport if a level is included", (): void => {
+            specificWalkOptions.npmLogLevel = "silly";
+            (walker as any).buildLoggerInstance(specificWalkOptions);
+            loggerStub.calledOnce.should.be.true;
+            const call = loggerStub.getCall(0);
+            call.args.should.be.an("array").that.is.not.empty;
+            const args = call.args[0];
+            args.transports.should.be.an("array").of.length(1);
+            args.transports[0].should.deep.equal({from: "Console"});
         });
 
         afterEach((): void => {

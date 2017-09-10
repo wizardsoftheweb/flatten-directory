@@ -67,7 +67,7 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
      * Validates the injected walker by running `instanceof`. If extra log
      * options are set, warns that they will be ignored
      * @param {IWalkOptions} options
-     * `IWalkOptions` from the `constructor`.
+     * `IWalkOptions` from the `constructor`
      */
     private validateInjectedLogger(options: IWalkOptions): void {
         if (options.logger instanceof winston.Logger) {
@@ -87,31 +87,39 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
      * new instance.
      *
      * @param {IWalkOptions} options
-     * `IWalkOptions` from the `constructor`.
+     * `IWalkOptions` from the `constructor`
      */
     private validateOrCreateLogger(options: IWalkOptions) {
         if (typeof options.logger !== "undefined") {
             this.validateInjectedLogger(options);
         } else {
-            this.logger = this.buildLoggerInstance(options.logFile, options.npmLogLevel);
+            this.logger = this.buildLoggerInstance(options);
         }
     }
 
-    private buildLoggerInstance(filename: string = "", level?: winston.NPMLoggingLevel): winston.LoggerInstance {
-        const options: winston.LoggerOptions = {};
-        options.transports = [];
-        if (filename !== "") {
-            options.transports.push(
+    /**
+     * Constructs a `winston.Logger` instance using the given options.
+     *
+     * @param  {IWalkOptions}           options
+     * `IWalkOptions` from the `constructor`
+     * @return {winston.LoggerInstance}
+     * A new `winstonLogger` with the specified transports
+     */
+    private buildLoggerInstance(options: IWalkOptions): winston.LoggerInstance {
+        const winstonOptions: winston.LoggerOptions = {};
+        winstonOptions.transports = [];
+        if (typeof options.logFile !== "undefined") {
+            winstonOptions.transports.push(
                 new (winston.transports.File)({
-                    filename,
+                    filename: options.logFile,
                     silent: true,
                     timestamp: true,
                 }),
             );
         }
-        if (typeof level !== "undefined") {
-            options.level = level;
-            options.transports.push(
+        if (typeof options.npmLogLevel !== "undefined") {
+            winstonOptions.level = options.npmLogLevel;
+            winstonOptions.transports.push(
                 new (winston.transports.Console)({
                     colorize: true,
                     handleExceptions: true,
@@ -120,7 +128,7 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
                 }),
             );
         }
-        return new (winston.Logger)(options);
+        return new (winston.Logger)(winstonOptions);
     }
 
     private includeThisFileMethodFactory(exclude: string[], options?: minimatch.IOptions): TIncludeThisPathFunction {
@@ -212,6 +220,5 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         }
         return;
     }
-
 
 }
