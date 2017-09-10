@@ -190,9 +190,9 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
 
     private generateExcludePatterns(exclude: string[], options?: minimatch.IOptions): void {
         this.logger.verbose("Prepending **/ to all excluded paths");
-        for (const pattern of exclude) {
-            this.excluded.push(new minimatch.Minimatch(`**/${pattern}`, options));
-        }
+        this.excluded = exclude.map((value: string) => {
+                return new minimatch.Minimatch(`**/${value}`);
+        });
     }
 
     private isExcluded(filename: string): boolean {
