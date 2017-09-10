@@ -101,6 +101,13 @@ describe("DirectoryWalker", (): void => {
             (walker as any).validateInjectedLogger(specificWalkOptions);
             warn.called.should.be.true;
         });
+
+        it("should warn if a log level is passed in", (): any => {
+            specificWalkOptions.npmLogLevel = "silly";
+            specificWalkOptions.logger = realLogger;
+            (walker as any).validateInjectedLogger(specificWalkOptions);
+            warn.called.should.be.true;
+        });
     });
 
     describe("validateOrCreateLogger", (): void => {
