@@ -7,6 +7,7 @@ function assignOptions(args: any): IFlattenDirectoryOptions {
         }
         return args;
     }
+    return {};
 }
 
 function validateOptions(options: IFlattenDirectoryOptions): IFlattenDirectoryOptions {
