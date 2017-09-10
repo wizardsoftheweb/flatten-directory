@@ -131,12 +131,22 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         return new (winston.Logger)(winstonOptions);
     }
 
+    private includeThisFileAlwaysTrue(filename: string): boolean {
+        return true;
+    }
+
+    private includeThisFilePosix(filename: string) {
+        return !this.isExcluded(filename);
+    }
+
+    private includeThisFileWindows(filename: string): boolean {
+        return this.includeThisFilePosix(this.createDummyPosixPath(filename));
+    }
+
     private includeThisFileMethodFactory(exclude: string[], options?: minimatch.IOptions): TIncludeThisPathFunction {
         if (exclude.length < 1) {
             this.logger.verbose("No excludes found; all files included");
-            return (filePath: string) => {
-                return true;
-            };
+            return this.includeThisFileAlwaysTrue;
         }
         this.logger.verbose("Generating minimatch pattern from excludes");
         if (options) {
@@ -154,13 +164,9 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         // Prepends the root directory (with glob stars) to each exclude
         this.generateExcludePatterns(exclude, options);
         if (/win/.test(process.platform)) {
-            return (filename: string) => {
-                return !this.isExcluded(this.createDummyPosixPath(filename));
-            };
+            return this.includeThisFileWindows;
         }
-        return (filename: string) => {
-            return !this.isExcluded(filename);
-        };
+        return this.includeThisFilePosix;
     }
 
     private generateExcludePatterns(exclude: string[], options?: minimatch.IOptions): void {
