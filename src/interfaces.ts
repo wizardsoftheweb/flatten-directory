@@ -7,9 +7,9 @@ export interface IFlattenDirectoryOptions {
     depth?: number;
 }
 
-export type TFileCallback = (filePath: string) => void;
+export type TFileCallback = (filename: string) => void;
 
-export type TIncludeThisPathFunction = (filepath: string) => boolean;
+export type TIncludeThisPathFunction = (filename: string) => boolean;
 
 export interface IWalkOptions {
     root: string;
