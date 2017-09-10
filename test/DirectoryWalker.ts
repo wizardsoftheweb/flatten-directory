@@ -30,6 +30,7 @@ describe("DirectoryWalker", (): void => {
     const silly: sinon.SinonStub = sinon.stub();
     const mockLogger: { [key: string]: sinon.SinonStub }
         = { error, warn, info, verbose, debug, silly };
+    const realLogger = new (winston.Logger)();
 
     let prototypeLoggerStub: sinon.SinonStub;
 
@@ -42,6 +43,7 @@ describe("DirectoryWalker", (): void => {
         callback,
         root: "root/directory",
     };
+    let specificWalkOptions: IWalkOptions;
 
     let walker: DirectoryWalker;
 
@@ -52,6 +54,7 @@ describe("DirectoryWalker", (): void => {
         includeStub = sinon
             .stub(DirectoryWalker.prototype as any, "includeThisFileMethodFactory");
         newDirectoryWalker();
+        specificWalkOptions = basicOptions;
     });
 
     describe("constructor", (): void => {
@@ -82,27 +85,50 @@ describe("DirectoryWalker", (): void => {
     });
 
     describe("validateInjectedLogger", (): void => {
-        let options: IWalkOptions;
-        const realLogger = new (winston.Logger)();
-
         it("should ensure the logger is a winston.Logger", (): any => {
-            options = basicOptions;
-            options.logger = "" as any;
-            (walker as any).validateInjectedLogger.bind(walker, options)
+            specificWalkOptions.logger = "" as any;
+            (walker as any).validateInjectedLogger.bind(walker, specificWalkOptions)
                 .should.throw(DirectoryWalker.ERROR_NOT_A_WINSTON);
-            options.logger = realLogger;
-            (walker as any).validateInjectedLogger.bind(walker, options)
+            specificWalkOptions.logger = realLogger;
+            (walker as any).validateInjectedLogger.bind(walker, specificWalkOptions)
                 .should.not.throw;
         });
 
         it("should warn if other log options are set", (): any => {
-            options = basicOptions;
-            options.logFile = "qqq";
-            options.logger = realLogger;
-            (walker as any).validateInjectedLogger(options);
+            specificWalkOptions.logFile = "qqq";
+            specificWalkOptions.logger = realLogger;
+            (walker as any).validateInjectedLogger(specificWalkOptions);
             warn.called.should.be.true;
         });
     });
+
+    // describe("validateOrCreateLogger", (): void => {
+    //     let validateLoggerStub: sinon.SinonStub;
+    //     let buildStub: sinon.SinonStub;
+
+    //     beforeEach((): void => {
+    //         validateLoggerStub = sinon.stub(walker as any, "validateInjectedLogger");
+    //         buildStub = sinon
+    //             .stub(walker as any, "buildLoggerInstance")
+    //             .returns(realLogger);
+    //     });
+
+    //     it("should ensure the logger is a winston.Logger", (): any => {
+    //         specificWalkOptions
+    //     });
+
+    //     it("should warn if other log options are set", (): any => {
+    //         specificWalkOptions.logFile = "qqq";
+    //         specificWalkOptions.logger = realLogger;
+    //         (walker as any).validateInjectedLogger(specificWalkOptions);
+    //         warn.called.should.be.true;
+    //     });
+
+    //     afterEach((): void => {
+    //         validateStub.restore();
+    //         buildStub.restore();
+    //     });
+    // });
 
     afterEach((): void => {
         restoreLogger();
@@ -141,8 +167,8 @@ describe("DirectoryWalker", (): void => {
         joinStub.restore();
     }
 
-    function newDirectoryWalker(options: IWalkOptions = basicOptions): void {
+    function newDirectoryWalker(specificWalkOptions: IWalkOptions = basicOptions): void {
         callback.reset();
-        walker = new DirectoryWalker(options);
+        walker = new DirectoryWalker(specificWalkOptions);
     }
 });
