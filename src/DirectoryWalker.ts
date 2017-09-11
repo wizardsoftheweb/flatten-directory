@@ -11,6 +11,17 @@ import {
     TPromiseLikeCallback,
 } from "./interfaces";
 
+/**
+ * This class takes a directory and `maxdepth`, discovers all files within the
+ * directory within `maxdepth` and not excluded, then executes a callback on
+ * each of the found files. The file discovery is recursive, but the execution
+ * is serial thanks to `Bluebirdeach`
+ *
+ * @class DirectoryWalker
+ * @see `man --pager='less -p "-maxdepth levels"' find`
+ * @see `Bluebird.each`
+ * @todo pull out discovery methods into a class and convert this to a function
+ */
 export class DirectoryWalker {
     /** @type {string[]} Default files/directories to exclude */
     public static DEFAULT_EXCLUDE = ["node_modules"];
