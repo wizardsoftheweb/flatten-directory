@@ -324,6 +324,20 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
             });
     }
 
+    /**
+     * Checks to determine the path's type and either parses the directory's
+     * contents or returns the filename itself.
+     *
+     * @param  {string}             initialPath
+     * The path of the file to check
+     * @param  {number}             depth
+     * The depth of the file to check
+     * @return {Bluebird<string[]>}
+     * If `initialPath` is a directory, an array containing all the files inside
+     * `initialPath`, out to `maxdepth`. If `initialPath` is a file, an array
+     * containing only `initialPath`. If `initialPath` is neither, returns an
+     * empty array.
+     */
     private parseIncludedPath(initialPath: string, depth: number): Bluebird<string[]> {
         const stats = fs.lstatSync(initialPath);
         if (stats.isFile()) {
@@ -331,7 +345,7 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         } else if (stats.isDirectory()) {
             return this.parseIncludedDirectory(initialPath, depth);
         } else {
-            this.logger.warning(`${initialPath} is neither a directory nor a file`);
+            this.logger.warn(`${initialPath} is neither a directory nor a file`);
         }
         return Bluebird.resolve([]);
     }

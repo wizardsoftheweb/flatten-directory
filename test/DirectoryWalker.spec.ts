@@ -467,8 +467,6 @@ describe("DirectoryWalker", (): void => {
         let readdirSyncStub: sinon.SinonStub;
         let discoverFilesStub: sinon.SinonStub;
 
-        const rootDirectory = "qqq";
-
         beforeEach((): void => {
             stubPath();
             readdirSyncStub = sinon.stub(fs as any, "readdirSync")
@@ -480,22 +478,22 @@ describe("DirectoryWalker", (): void => {
 
         it("should append the initial path to each object before discovering", (): PromiseLike<any> => {
             readdirSyncStub.returns(["relative"]);
-            return (walker as any).parseIncludedDirectory(rootDirectory, 0)
+            return (walker as any).parseIncludedDirectory(basicOptions.root, 0)
                 .then((files: string[]) => {
                     joinStub.called.should.be.true;
-                    joinStub.calledWith(rootDirectory, "relative").should.be.true;
+                    joinStub.calledWith(basicOptions.root, "relative").should.be.true;
                 });
         });
 
         it("should attempt to discover each object in the directory", (): PromiseLike<any> => {
-            return (walker as any).parseIncludedDirectory(rootDirectory, 0)
+            return (walker as any).parseIncludedDirectory(basicOptions.root, 0)
                 .then((files: string[]) => {
                     discoverFilesStub.callCount.should.equal(exclusions.length);
                 });
         });
 
         it("should resolve with an empty array when no files are discovered", (): PromiseLike<any> => {
-            return (walker as any).parseIncludedDirectory(rootDirectory, 0)
+            return (walker as any).parseIncludedDirectory(basicOptions.root, 0)
                 .then((files: string[]) => {
                     files.should.be.an("array").that.is.empty;
                 });
@@ -506,16 +504,70 @@ describe("DirectoryWalker", (): void => {
             readdirSyncStub.returns([0, 1, 2]);
             discoverFilesStub.onCall(0).returns(Bluebird.resolve([finalArray[0]]));
             discoverFilesStub.onCall(2).returns(Bluebird.resolve([finalArray[1], finalArray[2]]));
-            return (walker as any).parseIncludedDirectory(rootDirectory, 0)
-            .then((files: string[]) => {
-                files.should.deep.equal(["one", "two", "three"]);
-            });
+            return (walker as any).parseIncludedDirectory(basicOptions.root, 0)
+                .then((files: string[]) => {
+                    files.should.deep.equal(["one", "two", "three"]);
+                });
         });
 
         afterEach((): void => {
             readdirSyncStub.restore();
             discoverFilesStub.restore();
             restorePath();
+        });
+    });
+
+    describe("parseIncludedPath", (): void => {
+        let parseStub: sinon.SinonStub;
+        const isDirectory: sinon.SinonStub = sinon.stub().returns(false);
+        const isFile: sinon.SinonStub = sinon.stub().returns(false);
+        let lstatStub: sinon.SinonStub;
+
+
+
+        beforeEach((): void => {
+            parseStub = sinon
+                .stub(walker as any, "parseIncludedDirectory")
+                .returns(Bluebird.resolve());
+            isDirectory.reset();
+            isFile.reset();
+            lstatStub = sinon
+                .stub(fs as any, "lstatSync")
+                .returns({
+                    isDirectory,
+                    isFile,
+                });
+        });
+
+        it("should resolve to an empty array if the path is neither a file nor a directory", (): Bluebird<any> => {
+            return (walker as any).parseIncludedPath(basicOptions.root, 0)
+                .then((files: string[]) => {
+                    parseStub.called.should.be.false;
+                    files.should.be.an("array").that.is.empty;
+                });
+        });
+
+        it("should resolve with the initial path if the path is a file", (): Bluebird<any> => {
+            isFile.returns(true);
+            return (walker as any).parseIncludedPath(basicOptions.root, 0)
+                .then((files: string[]) => {
+                    parseStub.called.should.be.false;
+                    files.should.be.an("array").that.deep.equals([basicOptions.root]);
+                });
+        });
+
+        it("should parse the directory if the path is a directory", (): Bluebird<any> => {
+            isDirectory.returns(true);
+            return (walker as any).parseIncludedPath(basicOptions.root, 0)
+                .then((files: string[]) => {
+                    parseStub.calledOnce.should.be.true;
+                    parseStub.calledWith(basicOptions.root, 0).should.be.true;
+                });
+        });
+
+        afterEach((): void => {
+            parseStub.restore();
+            lstatStub.restore();
         });
     });
 
