@@ -374,6 +374,14 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         return Bluebird.resolve([]);
     }
 
+    /**
+     * Executes the original callback on each entry of `files`.
+     *
+     * @param  {string[]}       files
+     * The list of absolute paths to run the callback on
+     * @return {Bluebird<void>}
+     * Resolves when finished
+     */
     private executeCallbackOnAllDiscoveredFiles(files: string[]): Bluebird<void> {
         return Bluebird.each(files, this.callback)
             .then((initialFiles: string[]) => {

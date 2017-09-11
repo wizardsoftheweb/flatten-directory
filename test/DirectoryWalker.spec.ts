@@ -624,6 +624,17 @@ describe("DirectoryWalker", (): void => {
         });
     });
 
+    describe("executeCallbackOnAllDiscoveredFiles", (): void => {
+        it("should execute the callback for each file", (): Bluebird<any> => {
+            const callbackStub = sinon.stub().returns(Bluebird.resolve());
+            (walker as any).callback = callbackStub;
+            return (walker as any).executeCallbackOnAllDiscoveredFiles(exclusions)
+                .then(() => {
+                    callbackStub.callCount.should.equal(exclusions.length);
+                });
+        });
+    });
+
     // describe("recursiveWalkAndCall", (): void => {
     //     let depthStub: sinon.SinonStub;
     //     let includeThisStub: sinon.SinonStub;
