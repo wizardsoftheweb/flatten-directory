@@ -47,13 +47,13 @@ describe("DirectoryWalker", (): void => {
         root: "root/directory",
     };
     let specificWalkOptions: IWalkOptions;
-    const exclusions = ["file1/to/exclude", "file2/to/exclude"];
+    const arrayOfFiles = ["file1/to/exclude", "file2/to/exclude"];
     const filename = "input/filename";
     const currentDepth = 13;
     const goodDepth = 0;
     const badDepth = 1;
     const goodFilename = filename;
-    const badFilename = exclusions[0];
+    const badFilename = arrayOfFiles[0];
 
     let walker: DirectoryWalker;
 
@@ -296,7 +296,7 @@ describe("DirectoryWalker", (): void => {
                             return "always";
                         };
                     });
-                specificWalkOptions.exclude = exclusions;
+                specificWalkOptions.exclude = arrayOfFiles;
             });
 
             it("should return AlwaysTrue without exclusions", (): void => {
@@ -308,7 +308,7 @@ describe("DirectoryWalker", (): void => {
             it("should generate exclude patterns with exclusions", (): void => {
                 (walker as any).includeThisFileMethodFactory(specificWalkOptions);
                 generateStub.calledOnce.should.be.true;
-                generateStub.calledWith(exclusions).should.be.true;
+                generateStub.calledWith(arrayOfFiles).should.be.true;
             });
 
             it("should return the Posix method for most systems", (): void => {
@@ -361,10 +361,10 @@ describe("DirectoryWalker", (): void => {
 
     describe("generateExcludePatterns", (): void => {
         it("should create a minimatch for each exclusion", (): void => {
-            (walker as any).generateExcludePatterns(exclusions);
+            (walker as any).generateExcludePatterns(arrayOfFiles);
             const excluded = (walker as any).excluded;
             excluded.should.be.an("array").of.length(2);
-            excluded.should.deep.equal(exclusions.map((value: string) => {
+            excluded.should.deep.equal(arrayOfFiles.map((value: string) => {
                 return new minimatch.Minimatch(`**/${value}`);
             }));
         });
@@ -372,14 +372,14 @@ describe("DirectoryWalker", (): void => {
 
     describe("isExcluded", (): void => {
         it("should return true for excluded files", (): void => {
-            (walker as any).excluded = exclusions.map((value: string) => {
+            (walker as any).excluded = arrayOfFiles.map((value: string) => {
                 return new minimatch.Minimatch(`**/${value}`);
             });
-            (walker as any).isExcluded(exclusions[0]).should.be.true;
+            (walker as any).isExcluded(arrayOfFiles[0]).should.be.true;
         });
 
         it("should return false for files that are not excluded", (): void => {
-            (walker as any).isExcluded(exclusions[0]).should.be.false;
+            (walker as any).isExcluded(arrayOfFiles[0]).should.be.false;
         });
     });
 
@@ -470,7 +470,7 @@ describe("DirectoryWalker", (): void => {
         beforeEach((): void => {
             stubPath();
             readdirSyncStub = sinon.stub(fs as any, "readdirSync")
-                .returns(exclusions);
+                .returns(arrayOfFiles);
             discoverFilesStub = sinon
                 .stub(walker as any, "discoverFiles")
                 .returns(Bluebird.resolve([]));
@@ -488,7 +488,7 @@ describe("DirectoryWalker", (): void => {
         it("should attempt to discover each object in the directory", (): PromiseLike<any> => {
             return (walker as any).parseIncludedDirectory(basicOptions.root, currentDepth)
                 .then((files: string[]) => {
-                    discoverFilesStub.callCount.should.equal(exclusions.length);
+                    discoverFilesStub.callCount.should.equal(arrayOfFiles.length);
                 });
         });
 
@@ -628,9 +628,9 @@ describe("DirectoryWalker", (): void => {
         it("should execute the callback for each file", (): Bluebird<any> => {
             const callbackStub = sinon.stub().returns(Bluebird.resolve());
             (walker as any).callback = callbackStub;
-            return (walker as any).executeCallbackOnAllDiscoveredFiles(exclusions)
+            return (walker as any).executeCallbackOnAllDiscoveredFiles(arrayOfFiles)
                 .then(() => {
-                    callbackStub.callCount.should.equal(exclusions.length);
+                    callbackStub.callCount.should.equal(arrayOfFiles.length);
                 });
         });
     });
@@ -642,7 +642,7 @@ describe("DirectoryWalker", (): void => {
         beforeEach((): void => {
             discoverStub = sinon
                 .stub(walker as any, "discoverFiles")
-                .returns(Bluebird.resolve(exclusions));
+                .returns(Bluebird.resolve(arrayOfFiles));
             executeStub = sinon
                 .stub(walker as any, "executeCallbackOnAllDiscoveredFiles")
                 .returns(Bluebird.resolve());
@@ -659,7 +659,7 @@ describe("DirectoryWalker", (): void => {
             return (walker as any).discoverFilesAndExecuteCallback()
                 .then(() => {
                     executeStub.calledOnce.should.be.true;
-                    executeStub.calledWith(exclusions).should.be.true;
+                    executeStub.calledWith(arrayOfFiles).should.be.true;
                 });
         });
 
@@ -668,42 +668,6 @@ describe("DirectoryWalker", (): void => {
             executeStub.restore();
         });
     });
-
-    // describe("recursiveWalkAndCall", (): void => {
-    //     let depthStub: sinon.SinonStub;
-    //     let includeThisStub: sinon.SinonStub;
-    //     const isDirectory: sinon.SinonStub = sinon.stub();
-    //     const isFile: sinon.SinonStub = sinon.stub();
-    //     let lstatStub: sinon.SinonStub;
-    //     let readdirSyncStub: sinon.SinonStub;
-
-    //     beforeEach((): void => {
-    //         depthStub = sinon
-    //             .stub(walker as any, "checkDepth")
-    //             .returns(true);
-    //         includeThisStub = sinon
-    //             .stub(walker as any, "includeThisFile")
-    //             .returns(true);
-    //         lstatStub = sinon
-    //             .stub(fs as any, "lstatSync")
-    //             .returns({
-    //                 isDirectory,
-    //                 isFile,
-    //             });
-    //         isDirectory.reset();
-    //         isFile.reset();
-    //         readdirSyncStub = sinon
-    //             .stub(walker as any, "checkDepth")
-    //             .returns(true);
-    //     });
-
-    //     afterEach((): void => {
-    //         depthStub.restore();
-    //         includeThisStub.restore();
-    //         lstatStub.restore();
-    //         readdirSyncStub.restore();
-    //     });
-    // });
 
     afterEach((): void => {
         restoreLogger();
