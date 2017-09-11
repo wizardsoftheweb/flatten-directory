@@ -235,7 +235,7 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
      * Checks a filename against all the excluded patterns.
      *
      * @param  {string}  filename
-     * The path to the file to check
+     * The path of the file to check
      * @return {boolean}
      * True if there's a hit from `excluded`; false otherwise
      */
@@ -282,8 +282,18 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         return windowsPath;
     }
 
+    /**
+     * Combines `checkDepth` and `includeThisFile` into a single return.
+     *
+     * @param  {string}  filename
+     * The path of the file to check
+     * @param  {number}  depth
+     * The depth of the file to check
+     * @return {boolean}
+     * True if depth is valid and file is not excluded; false otherwise
+     */
     private includeThisFileAtDepth(filename: string, depth: number): boolean {
-        return this.checkDepth(depth) && this.includeThisFile(filename);
+        return (this.checkDepth(depth)) && this.includeThisFile(filename);
     }
 
     private parseIncludedDirectory(initialPath: string, depth: number): Bluebird<string[]> {

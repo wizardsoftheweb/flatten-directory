@@ -14,7 +14,7 @@ import * as path from "path";
 import * as winston from "winston";
 
 import { DirectoryWalker } from "../src/DirectoryWalker";
-import { IWalkOptions, TFileCallback, TIncludeThisPathFunction } from "../src/interfaces";
+import { IWalkOptions, TIncludeThisPathFunction } from "../src/interfaces";
 
 interface IStubObject {
     [key: string]: sinon.SinonStub;
@@ -47,6 +47,7 @@ describe("DirectoryWalker", (): void => {
     };
     let specificWalkOptions: IWalkOptions;
     const exclusions = ["file1/to/exclude", "file2/to/exclude"];
+    const filename = "input/filename";
 
     let walker: DirectoryWalker;
 
@@ -264,8 +265,6 @@ describe("DirectoryWalker", (): void => {
             let platformStub: sinon.SinonStub;
             let generateStub: sinon.SinonStub;
 
-            const filename = "input/filename";
-
             beforeEach((): void => {
                 includeStub.restore();
                 platformStub = sinon.stub(process as any, "platform")
@@ -407,38 +406,97 @@ describe("DirectoryWalker", (): void => {
         });
     });
 
-    describe("recursiveWalkAndCall", (): void => {
+    describe("includeThisFileAtDepth", (): void => {
         let depthStub: sinon.SinonStub;
+        let innerIncludeStub: sinon.SinonStub;
         let includeThisStub: sinon.SinonStub;
-        const isDirectory: sinon.SinonStub = sinon.stub();
-        const isFile: sinon.SinonStub = sinon.stub();
-        let lstatStub: sinon.SinonStub;
-        let readdirSyncStub: sinon.SinonStub;
+
+        const goodDepth = 0;
+        const badDepth = 1;
+        const goodFilename = filename;
+        const badFilename = exclusions[0];
 
         beforeEach((): void => {
             depthStub = sinon
                 .stub(walker as any, "checkDepth")
-                .returns(true);
+                .callsFake((input: number) => {
+                    return input === goodDepth;
+                });
+            innerIncludeStub = sinon.stub()
+                .callsFake((input: string) => {
+                    return input === goodFilename;
+                });
             includeThisStub = sinon
                 .stub(walker as any, "includeThisFile")
-                .returns(true);
-            lstatStub = sinon
-                .stub(fs as any, "lstatSync")
-                .returns(true);
-            isDirectory.reset();
-            isFile.reset();
-            readdirSyncStub = sinon
-                .stub(walker as any, "checkDepth")
-                .returns(true);
+                .get(() => {
+                    return (input: string) => {
+                        return innerIncludeStub(input);
+                    };
+                });
+        });
+
+        it("should include files inside the depth that are not excluded", (): void => {
+            (walker as any).includeThisFileAtDepth(goodFilename, goodDepth).should.be.true;
+            depthStub.calledOnce.should.be.true;
+            innerIncludeStub.calledOnce.should.be.true;
+        });
+
+        it("should ignore files outside the depth", (): void => {
+            (walker as any).includeThisFileAtDepth(goodFilename, badDepth).should.be.false;
+            (walker as any).includeThisFileAtDepth(badFilename, badDepth).should.be.false;
+            depthStub.calledTwice.should.be.true;
+            innerIncludeStub.called.should.be.false;
+        });
+
+        it("should ignore excluded files", (): void => {
+            (walker as any).includeThisFileAtDepth(badFilename, goodDepth).should.be.false;
+            (walker as any).includeThisFileAtDepth(badFilename, badDepth).should.be.false;
+            depthStub.calledTwice.should.be.true;
+            includeStub.calledOnce.should.be.true;
         });
 
         afterEach((): void => {
             depthStub.restore();
             includeThisStub.restore();
-            lstatStub.restore();
-            readdirSyncStub.restore();
         });
+
     });
+
+    // describe("recursiveWalkAndCall", (): void => {
+    //     let depthStub: sinon.SinonStub;
+    //     let includeThisStub: sinon.SinonStub;
+    //     const isDirectory: sinon.SinonStub = sinon.stub();
+    //     const isFile: sinon.SinonStub = sinon.stub();
+    //     let lstatStub: sinon.SinonStub;
+    //     let readdirSyncStub: sinon.SinonStub;
+
+    //     beforeEach((): void => {
+    //         depthStub = sinon
+    //             .stub(walker as any, "checkDepth")
+    //             .returns(true);
+    //         includeThisStub = sinon
+    //             .stub(walker as any, "includeThisFile")
+    //             .returns(true);
+    //         lstatStub = sinon
+    //             .stub(fs as any, "lstatSync")
+    //             .returns({
+    //                 isDirectory,
+    //                 isFile,
+    //             });
+    //         isDirectory.reset();
+    //         isFile.reset();
+    //         readdirSyncStub = sinon
+    //             .stub(walker as any, "checkDepth")
+    //             .returns(true);
+    //     });
+
+    //     afterEach((): void => {
+    //         depthStub.restore();
+    //         includeThisStub.restore();
+    //         lstatStub.restore();
+    //         readdirSyncStub.restore();
+    //     });
+    // });
 
     afterEach((): void => {
         restoreLogger();
