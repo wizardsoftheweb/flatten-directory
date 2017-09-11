@@ -44,7 +44,7 @@ Once all of these are finished, I'll release `v1`. Until then, `v0` should be us
 
 | Progess | Feature |
 | ------: | ------- |
-|      0% | Add `include` options to `IWalkOptions |
+|      0% | Add `include` options to `IWalkOptions` |
 |     80% | Walk the initial directory, collecting files that aren't excluded within `maxdepth` |
 |      0% | Link some internet version of `man find` |
 |      0% | Finish `parseOptions` |
