@@ -385,6 +385,7 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
     private executeCallbackOnAllDiscoveredFiles(files: string[]): Bluebird<void> {
         return Bluebird.each(files, this.callback)
             .then((initialFiles: string[]) => {
+                this.logger.silly(initialFiles as any);
                 // Bluebird.each resolves with the initial array
                 return Bluebird.resolve();
             });
