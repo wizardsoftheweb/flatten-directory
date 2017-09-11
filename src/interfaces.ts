@@ -7,7 +7,7 @@ export interface IFlattenDirectoryOptions {
     depth?: number;
 }
 
-export type TNodeCallback = (filename: string, done: (error: any, ...remainder: any[]) => void) => void;
+export type TNodeCallback = (filename: string, done: (...firstArgIsError: any[]) => void) => void;
 
 export type TPromiseLikeCallback = (filename: string) => PromiseLike<void>;
 
