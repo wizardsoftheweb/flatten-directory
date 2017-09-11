@@ -50,6 +50,10 @@ describe("DirectoryWalker", (): void => {
     const exclusions = ["file1/to/exclude", "file2/to/exclude"];
     const filename = "input/filename";
     const currentDepth = 13;
+    const goodDepth = 0;
+    const badDepth = 1;
+    const goodFilename = filename;
+    const badFilename = exclusions[0];
 
     let walker: DirectoryWalker;
 
@@ -413,11 +417,6 @@ describe("DirectoryWalker", (): void => {
         let innerIncludeStub: sinon.SinonStub;
         let includeThisStub: sinon.SinonStub;
 
-        const goodDepth = 0;
-        const badDepth = 1;
-        const goodFilename = filename;
-        const badFilename = exclusions[0];
-
         beforeEach((): void => {
             depthStub = sinon
                 .stub(walker as any, "checkDepth")
@@ -567,6 +566,61 @@ describe("DirectoryWalker", (): void => {
         afterEach((): void => {
             parseStub.restore();
             lstatStub.restore();
+        });
+    });
+
+    describe("discoverFiles", (): void => {
+        let includeWithDepthStub: sinon.SinonStub;
+        let parseStub: sinon.SinonStub;
+
+        beforeEach((): void => {
+            includeWithDepthStub = sinon
+                .stub(walker as any, "includeThisFileAtDepth")
+                .returns(false);
+            includeWithDepthStub
+                .withArgs(goodFilename, goodDepth)
+                .returns(true);
+            parseStub = sinon
+                .stub(walker as any, "parseIncludedPath")
+                .returns(Bluebird.resolve([]));
+        });
+
+        it("should assign DEFAULT_STARTING_DEPTH if no depth is passed", (): Bluebird<any> => {
+            return (walker as any).discoverFiles(goodFilename)
+                .then(() => {
+                    includeWithDepthStub.calledOnce.should.be.true;
+                    includeWithDepthStub.calledWith(
+                        goodFilename,
+                        DirectoryWalker.DEFAULT_STARTING_DEPTH,
+                    ).should.be.true;
+                });
+        });
+
+        it("should ignore bad depths", (): Bluebird<any> => {
+            return (walker as any).discoverFiles(goodFilename, badDepth)
+                .then((files: string[]) => {
+                    files.should.be.an("array").that.is.empty;
+                });
+        });
+
+        it("should ignore excluded filenames", (): Bluebird<any> => {
+            return (walker as any).discoverFiles(badFilename, goodDepth)
+                .then((files: string[]) => {
+                    files.should.be.an("array").that.is.empty;
+                });
+        });
+
+        it("should parse valid paths", (): Bluebird<any> => {
+            return (walker as any).discoverFiles(goodFilename, goodDepth)
+                .then((files: string[]) => {
+                    parseStub.calledOnce.should.be.true;
+                    parseStub.calledWith(goodFilename, goodDepth).should.be.true;
+                });
+        });
+
+        afterEach((): void => {
+            includeWithDepthStub.restore();
+            parseStub.restore();
         });
     });
 

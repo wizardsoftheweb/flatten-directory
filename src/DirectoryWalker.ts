@@ -16,6 +16,8 @@ export class DirectoryWalker {
     public static DEFAULT_EXCLUDE = ["node_modules"];
     /** @type {number} Default depth */
     public static DEFAULT_MAXDEPTH: number = 47;
+    /** @type {number} The starting depth for walking */
+    public static DEFAULT_STARTING_DEPTH: number = 0;
     /** @type {string} Error message to throw when `options.minimatchOptions.noglobstar` is used */
     public static ERROR_NOGLOBSTAR = "DirectoryWalker depends on glob stars; please remove the noglobstar option";
     /** @type {string} Error message to throw when `options.Logger` is not a `winston.Logger` */
@@ -350,7 +352,22 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         return Bluebird.resolve([]);
     }
 
-    private discoverFiles(initialPath: string, depth: number = 0): Bluebird<string[]> {
+    /**
+     * Checks the given path against exclusions and depth. If it's valid,
+     * parses the path.
+     *
+     * @param  {string}             initialPath
+     * The path of the file to check
+     * @param  {number}           depth
+     * The depth of the file to check; defaults to
+     * `DirectoryWalker.DEFAULT_STARTING_DEPTH`
+     * @return {Bluebird<string[]>}
+     * An array containing paths to all the includable files
+     */
+    private discoverFiles(
+        initialPath: string,
+        depth: number = DirectoryWalker.DEFAULT_STARTING_DEPTH,
+    ): Bluebird<string[]> {
         if (this.includeThisFileAtDepth(initialPath, depth)) {
             return this.parseIncludedPath(initialPath, depth);
         }
