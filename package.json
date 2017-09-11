@@ -1,6 +1,6 @@
 {
   "name": "@wizardsoftheweb/flatten-directory",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Flattens a source directory into a target directory",
   "main": "index.js",
   "directories": {
