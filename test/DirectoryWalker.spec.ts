@@ -8,6 +8,7 @@ import * as sinon from "sinon";
 const expect = chai.expect;
 const should = chai.should();
 
+import * as fs from "fs";
 import * as minimatch from "minimatch";
 import * as path from "path";
 import * as winston from "winston";
@@ -323,8 +324,8 @@ describe("DirectoryWalker", (): void => {
                     noglobstar: true,
                 };
                 (walker as any).includeThisFileMethodFactory
-                .bind(walker, specificWalkOptions)
-                .should.throw(DirectoryWalker.ERROR_NOGLOBSTAR);
+                    .bind(walker, specificWalkOptions)
+                    .should.throw(DirectoryWalker.ERROR_NOGLOBSTAR);
             });
 
             it("should warn if dotfiles are not checked", (): void => {
@@ -406,6 +407,39 @@ describe("DirectoryWalker", (): void => {
         });
     });
 
+    describe("recursiveWalkAndCall", (): void => {
+        let depthStub: sinon.SinonStub;
+        let includeThisStub: sinon.SinonStub;
+        const isDirectory: sinon.SinonStub = sinon.stub();
+        const isFile: sinon.SinonStub = sinon.stub();
+        let lstatStub: sinon.SinonStub;
+        let readdirSyncStub: sinon.SinonStub;
+
+        beforeEach((): void => {
+            depthStub = sinon
+                .stub(walker as any, "checkDepth")
+                .returns(true);
+            includeThisStub = sinon
+                .stub(walker as any, "includeThisFile")
+                .returns(true);
+            lstatStub = sinon
+                .stub(fs as any, "lstatSync")
+                .returns(true);
+            isDirectory.reset();
+            isFile.reset();
+            readdirSyncStub = sinon
+                .stub(walker as any, "checkDepth")
+                .returns(true);
+        });
+
+        afterEach((): void => {
+            depthStub.restore();
+            includeThisStub.restore();
+            lstatStub.restore();
+            readdirSyncStub.restore();
+        });
+    });
+
     afterEach((): void => {
         restoreLogger();
         validateStub.restore();
@@ -435,7 +469,10 @@ describe("DirectoryWalker", (): void => {
 
     function stubPath(pathToReturn: string = "qqq"): void {
         normalizeStub = sinon.stub(path, "normalize").returns(pathToReturn);
-        joinStub = sinon.stub(path, "join").returns(pathToReturn);
+        joinStub = sinon.stub(path, "join")
+            .callsFake((...args: string[]) => {
+                return args.join("/");
+            });
     }
 
     function restorePath(): void {

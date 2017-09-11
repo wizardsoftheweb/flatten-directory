@@ -7,13 +7,15 @@ export interface IFlattenDirectoryOptions {
     depth?: number;
 }
 
-export type TFileCallback = (filename: string) => void;
+export type TNodeCallback = (filename: string, done: (error: any, ...remainder: any[]) => void) => void;
+
+export type TPromiseLikeCallback = (filename: string) => PromiseLike<void>;
 
 export type TIncludeThisPathFunction = (filename: string) => boolean;
 
 export interface IWalkOptions {
     root: string;
-    callback: TFileCallback;
+    callback: TNodeCallback | TPromiseLikeCallback;
     logFile?: string;
     /**
      * The maximum depth this walker will descend

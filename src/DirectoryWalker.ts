@@ -1,9 +1,15 @@
+import * as Bluebird from "bluebird";
 import * as fs from "fs";
 import * as minimatch from "minimatch";
 import * as path from "path";
 import * as winston from "winston";
 
-import { IWalkOptions, TFileCallback, TIncludeThisPathFunction } from "./interfaces";
+import {
+    IWalkOptions,
+    TIncludeThisPathFunction,
+    TNodeCallback,
+    TPromiseLikeCallback,
+} from "./interfaces";
 
 export class DirectoryWalker {
     /** @type {string[]} Default files/directories to exclude */
@@ -16,8 +22,8 @@ export class DirectoryWalker {
     public static ERROR_NOT_A_WINSTON = `\
 logger must be an instance of winston.Logger (i.e. logger instanceof winston.Logger === true)`;
 
-    /** @type {TFileCallback} Callback to run on each file */
-    private callback: TFileCallback;
+    /** @type {TPromiseLikeCallback} Callback to run on each file */
+    private callback: TPromiseLikeCallback;
     /**
      * The maximum depth this walker will descend
      * @type {number}
@@ -51,20 +57,22 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         this.validateOrCreateLogger(options);
         this.logger.info("Preparing DirectoryWalker");
         this.rootDirectory = path.normalize(options.root);
-        this.callback = options.callback;
+        this.callback = Bluebird.promisify(options.callback);
         this.maxdepth = options.maxdepth || DirectoryWalker.DEFAULT_MAXDEPTH;
         this.includeThisFile = this.includeThisFileMethodFactory(options);
     }
 
     /**
-     * Public convenience method to walk the directory.
-     * @see `recursiveWalkAndCall`
+     * Public convenience method to walk the directory and execute the callback.
+     * @see `discoverFilesAndExecuteCallback`
      */
     /* istanbul ignore next */
-    public walk(): void {
+    public walk(): PromiseLike<void> {
         this.logger.info(`Walking ${this.rootDirectory}`);
-        this.recursiveWalkAndCall(this.rootDirectory);
-        this.logger.info(`Finished walking ${this.rootDirectory}`);
+        return this.discoverFilesAndExecuteCallback()
+            .then(() => {
+                this.logger.info(`Finished walking ${this.rootDirectory}`);
+            });
     }
 
     /**
@@ -215,7 +223,7 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
     private generateExcludePatterns(exclude: string[], options?: minimatch.IOptions): void {
         this.logger.verbose("Prepending **/ to all excluded paths");
         this.excluded = exclude.map((value: string) => {
-                return new minimatch.Minimatch(`**/${value}`);
+            return new minimatch.Minimatch(`**/${value}`);
         });
     }
 
@@ -270,30 +278,57 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         return windowsPath;
     }
 
-    private recursiveWalkAndCall(initialPath: string, depth: number = -1): void {
+    private includeThisFileAtDepth(filename: string, depth: number): boolean {
         if (this.checkDepth(depth)) {
-            if (this.includeThisFile(initialPath)) {
-                const stats = fs.lstatSync(initialPath);
-                if (stats.isDirectory()) {
-                    this.logger.verbose(`${initialPath} is a directory; recursing`);
-                    // Force a synchronous read in case the callback does something wonky
-                    const contents = fs.readdirSync(initialPath);
-                    for (const file of contents) {
-                        this.recursiveWalkAndCall(path.join(initialPath, file), depth + 1);
-                    }
-                } else if (stats.isFile()) {
-                    this.logger.verbose(`Executing the callback on ${initialPath}`);
-                    this.callback(initialPath);
-                } else {
-                    this.logger.warning(`${initialPath} is neither a directory nor a file`);
-                }
-            } else {
-                this.logger.verbose(`${initialPath} is excluded`);
-            }
+            return this.includeThisFile(filename);
         } else {
-            this.logger.verbose(`${initialPath} is outside the maximum depth`);
+            this.logger.debug(`${filename} is outside the maximum depth`);
         }
-        return;
+        return false;
     }
 
+    private parseIncludedDirectory(initialPath: string, depth: number): PromiseLike<string[]> {
+        const foundFiles = [];
+        // Force a synchronous read in case the callback does something wonky
+        const contents = fs.readdirSync(initialPath);
+        return Bluebird.each(contents, (value: string) => {
+            return this.discoverFiles(value, depth + 1)
+                .then((discoveredFiles: string[]) => {
+                    foundFiles.concat(discoveredFiles);
+                });
+        })
+            .then((): string[] => {
+                return foundFiles;
+            });
+    }
+
+    private parseIncludedPath(initialPath: string, depth: number): PromiseLike<string[]> {
+        const stats = fs.lstatSync(initialPath);
+        if (stats.isFile()) {
+            return Bluebird.resolve([initialPath]);
+        } else if (stats.isDirectory()) {
+            return this.parseIncludedDirectory(initialPath, depth);
+        } else {
+            this.logger.warning(`${initialPath} is neither a directory nor a file`);
+        }
+        return Bluebird.resolve([]);
+    }
+
+    private discoverFiles(initialPath: string, depth: number = 0): PromiseLike<string[]> {
+        if (this.includeThisFileAtDepth(initialPath, depth)) {
+            return this.parseIncludedPath(initialPath, depth);
+        }
+        return Bluebird.resolve([]);
+    }
+
+    private executeCallbackOnAllDiscoveredFiles(files: string[]): PromiseLike<void> {
+        return Bluebird.each(files, this.callback);
+    }
+
+    private discoverFilesAndExecuteCallback(): PromiseLike<void> {
+        return this.discoverFiles(this.rootDirectory)
+            .then((discoveredFiles: string[]) => {
+                return this.executeCallbackOnAllDiscoveredFiles(discoveredFiles);
+            });
+    }
 }
