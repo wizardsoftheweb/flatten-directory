@@ -11,6 +11,14 @@
   },
   "author": "CJ Harries <cj@wizardsoftheweb.pro> (https://wizardsoftheweb.pro/)",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/wizardsoftheweb/flatten-directory.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wizardsoftheweb/flatten-directory/issues"
+  },
+  "homepage": "https://github.com/wizardsoftheweb/flatten-directory#readme",
   "dependencies": {
     "bluebird": "^3.5.0",
     "minimatch": "^3.0.4"
