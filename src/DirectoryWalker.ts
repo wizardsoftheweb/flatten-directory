@@ -88,6 +88,8 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
     private validateInjectedLogger(options: IWalkOptions): void {
         if (options.logger instanceof winston.Logger) {
             this.logger = options.logger;
+            // Don't care about the else option; it's default
+            /* istanbul ignore else */
             if (typeof options.logFile !== "undefined" || typeof options.npmLogLevel !== "undefined") {
                 this.logger.warn(
                     "Log files (logFile) and levels (npmLogLevel) are ignored when an instance is passed in",
