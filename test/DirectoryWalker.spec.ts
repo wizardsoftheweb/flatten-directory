@@ -49,6 +49,7 @@ describe("DirectoryWalker", (): void => {
     let specificWalkOptions: IWalkOptions;
     const exclusions = ["file1/to/exclude", "file2/to/exclude"];
     const filename = "input/filename";
+    const currentDepth = 13;
 
     let walker: DirectoryWalker;
 
@@ -478,7 +479,7 @@ describe("DirectoryWalker", (): void => {
 
         it("should append the initial path to each object before discovering", (): PromiseLike<any> => {
             readdirSyncStub.returns(["relative"]);
-            return (walker as any).parseIncludedDirectory(basicOptions.root, 0)
+            return (walker as any).parseIncludedDirectory(basicOptions.root, currentDepth)
                 .then((files: string[]) => {
                     joinStub.called.should.be.true;
                     joinStub.calledWith(basicOptions.root, "relative").should.be.true;
@@ -486,14 +487,14 @@ describe("DirectoryWalker", (): void => {
         });
 
         it("should attempt to discover each object in the directory", (): PromiseLike<any> => {
-            return (walker as any).parseIncludedDirectory(basicOptions.root, 0)
+            return (walker as any).parseIncludedDirectory(basicOptions.root, currentDepth)
                 .then((files: string[]) => {
                     discoverFilesStub.callCount.should.equal(exclusions.length);
                 });
         });
 
         it("should resolve with an empty array when no files are discovered", (): PromiseLike<any> => {
-            return (walker as any).parseIncludedDirectory(basicOptions.root, 0)
+            return (walker as any).parseIncludedDirectory(basicOptions.root, currentDepth)
                 .then((files: string[]) => {
                     files.should.be.an("array").that.is.empty;
                 });
@@ -504,7 +505,7 @@ describe("DirectoryWalker", (): void => {
             readdirSyncStub.returns([0, 1, 2]);
             discoverFilesStub.onCall(0).returns(Bluebird.resolve([finalArray[0]]));
             discoverFilesStub.onCall(2).returns(Bluebird.resolve([finalArray[1], finalArray[2]]));
-            return (walker as any).parseIncludedDirectory(basicOptions.root, 0)
+            return (walker as any).parseIncludedDirectory(basicOptions.root, currentDepth)
                 .then((files: string[]) => {
                     files.should.deep.equal(["one", "two", "three"]);
                 });
@@ -523,8 +524,6 @@ describe("DirectoryWalker", (): void => {
         const isFile: sinon.SinonStub = sinon.stub().returns(false);
         let lstatStub: sinon.SinonStub;
 
-
-
         beforeEach((): void => {
             parseStub = sinon
                 .stub(walker as any, "parseIncludedDirectory")
@@ -540,7 +539,7 @@ describe("DirectoryWalker", (): void => {
         });
 
         it("should resolve to an empty array if the path is neither a file nor a directory", (): Bluebird<any> => {
-            return (walker as any).parseIncludedPath(basicOptions.root, 0)
+            return (walker as any).parseIncludedPath(basicOptions.root, currentDepth)
                 .then((files: string[]) => {
                     parseStub.called.should.be.false;
                     files.should.be.an("array").that.is.empty;
@@ -549,7 +548,7 @@ describe("DirectoryWalker", (): void => {
 
         it("should resolve with the initial path if the path is a file", (): Bluebird<any> => {
             isFile.returns(true);
-            return (walker as any).parseIncludedPath(basicOptions.root, 0)
+            return (walker as any).parseIncludedPath(basicOptions.root, currentDepth)
                 .then((files: string[]) => {
                     parseStub.called.should.be.false;
                     files.should.be.an("array").that.deep.equals([basicOptions.root]);
@@ -558,10 +557,10 @@ describe("DirectoryWalker", (): void => {
 
         it("should parse the directory if the path is a directory", (): Bluebird<any> => {
             isDirectory.returns(true);
-            return (walker as any).parseIncludedPath(basicOptions.root, 0)
+            return (walker as any).parseIncludedPath(basicOptions.root, currentDepth)
                 .then((files: string[]) => {
                     parseStub.calledOnce.should.be.true;
-                    parseStub.calledWith(basicOptions.root, 0).should.be.true;
+                    parseStub.calledWith(basicOptions.root, currentDepth).should.be.true;
                 });
         });
 
