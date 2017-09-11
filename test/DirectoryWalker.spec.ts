@@ -635,6 +635,40 @@ describe("DirectoryWalker", (): void => {
         });
     });
 
+    describe("discoverFilesAndExecuteCallback", (): void => {
+        let discoverStub: sinon.SinonStub;
+        let executeStub: sinon.SinonStub;
+
+        beforeEach((): void => {
+            discoverStub = sinon
+                .stub(walker as any, "discoverFiles")
+                .returns(Bluebird.resolve(exclusions));
+            executeStub = sinon
+                .stub(walker as any, "executeCallbackOnAllDiscoveredFiles")
+                .returns(Bluebird.resolve());
+        });
+
+        it("should discover all files using class values", (): Bluebird<any> => {
+            return (walker as any).discoverFilesAndExecuteCallback()
+                .then(() => {
+                    discoverStub.calledOnce.should.be.true;
+                    discoverStub.calledWith(basicOptions.root).should.be.true;
+                });
+        });
+        it("should discover all files using class values", (): Bluebird<any> => {
+            return (walker as any).discoverFilesAndExecuteCallback()
+                .then(() => {
+                    executeStub.calledOnce.should.be.true;
+                    executeStub.calledWith(exclusions).should.be.true;
+                });
+        });
+
+        afterEach((): void => {
+            discoverStub.restore();
+            executeStub.restore();
+        });
+    });
+
     // describe("recursiveWalkAndCall", (): void => {
     //     let depthStub: sinon.SinonStub;
     //     let includeThisStub: sinon.SinonStub;

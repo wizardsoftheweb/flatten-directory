@@ -380,7 +380,7 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
      * @param  {string[]}       files
      * The list of absolute paths to run the callback on
      * @return {Bluebird<void>}
-     * Resolves when finished
+     * Resolves with `void` when finished
      */
     private executeCallbackOnAllDiscoveredFiles(files: string[]): Bluebird<void> {
         return Bluebird.each(files, this.callback)
@@ -390,6 +390,13 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
             });
     }
 
+    /**
+     * Collects all the necessary methods to walk the directory.
+     *
+     * @return {Bluebird<void>}
+     * Resolves after directory has been mapped and the callback has executed
+     * on each file
+     */
     private discoverFilesAndExecuteCallback(): Bluebird<void> {
         return this.discoverFiles(this.rootDirectory)
             .then((discoveredFiles: string[]) => {
