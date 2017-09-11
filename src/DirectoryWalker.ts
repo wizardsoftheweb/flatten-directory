@@ -296,14 +296,25 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         return (this.checkDepth(depth)) && this.includeThisFile(filename);
     }
 
+    /**
+     * Runs `discoverFiles` on all the files inside `initialPath`.
+     *
+     * @param  {string}             initialPath
+     * The path of the directory to check
+     * @param  {number}             depth
+     * The depth of the directory to check
+     * @return {Bluebird<string[]>}
+     * An array containing all the files inside `initialPath`, out to `maxdepth`
+     */
     private parseIncludedDirectory(initialPath: string, depth: number): Bluebird<string[]> {
-        const foundFiles: string[] = [];
+        let foundFiles: string[] = [];
         // Force a synchronous read in case the callback does something wonky
         const contents = fs.readdirSync(initialPath);
         return Bluebird.each(contents, (value: string) => {
-            return this.discoverFiles(value, depth + 1)
-                .then((discoveredFiles: string[]) => {
-                    foundFiles.concat(discoveredFiles);
+            return this
+                .discoverFiles(path.join(initialPath, value), depth + 1)
+                .then((newFiles: string[]) => {
+                    foundFiles = foundFiles.concat(newFiles);
                 });
         })
             .then((): string[] => {

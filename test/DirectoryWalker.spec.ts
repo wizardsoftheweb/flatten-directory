@@ -8,6 +8,7 @@ import * as sinon from "sinon";
 const expect = chai.expect;
 const should = chai.should();
 
+import * as Bluebird from "bluebird";
 import * as fs from "fs";
 import * as minimatch from "minimatch";
 import * as path from "path";
@@ -184,7 +185,7 @@ describe("DirectoryWalker", (): void => {
             const call = loggerStub.getCall(0);
             call.args.should.be.an("array").that.is.not.empty;
             const args = call.args[0];
-            args.transports.should.be.an("array").of.length(1);
+            args.transports.should.be.an("array").with.lengthOf(1);
             args.transports[0].should.deep.equal({ from: "File" });
         });
 
@@ -195,7 +196,7 @@ describe("DirectoryWalker", (): void => {
             const call = loggerStub.getCall(0);
             call.args.should.be.an("array").that.is.not.empty;
             const args = call.args[0];
-            args.transports.should.be.an("array").of.length(1);
+            args.transports.should.be.an("array").with.lengthOf(1);
             args.transports[0].should.deep.equal({ from: "Console" });
         });
 
@@ -462,6 +463,62 @@ describe("DirectoryWalker", (): void => {
 
     });
 
+    describe("parseIncludedDirectory", (): void => {
+        let readdirSyncStub: sinon.SinonStub;
+        let discoverFilesStub: sinon.SinonStub;
+
+        const rootDirectory = "qqq";
+
+        beforeEach((): void => {
+            stubPath();
+            readdirSyncStub = sinon.stub(fs as any, "readdirSync")
+                .returns(exclusions);
+            discoverFilesStub = sinon
+                .stub(walker as any, "discoverFiles")
+                .returns(Bluebird.resolve([]));
+        });
+
+        it("should append the initial path to each object before discovering", (): PromiseLike<any> => {
+            readdirSyncStub.returns(["relative"]);
+            return (walker as any).parseIncludedDirectory(rootDirectory, 0)
+                .then((files: string[]) => {
+                    joinStub.called.should.be.true;
+                    joinStub.calledWith(rootDirectory, "relative").should.be.true;
+                });
+        });
+
+        it("should attempt to discover each object in the directory", (): PromiseLike<any> => {
+            return (walker as any).parseIncludedDirectory(rootDirectory, 0)
+                .then((files: string[]) => {
+                    discoverFilesStub.callCount.should.equal(exclusions.length);
+                });
+        });
+
+        it("should resolve with an empty array when no files are discovered", (): PromiseLike<any> => {
+            return (walker as any).parseIncludedDirectory(rootDirectory, 0)
+                .then((files: string[]) => {
+                    files.should.be.an("array").that.is.empty;
+                });
+        });
+
+        it("should resolve with the collected recursive results", (): PromiseLike<any> => {
+            const finalArray = ["one", "two", "three"];
+            readdirSyncStub.returns([0, 1, 2]);
+            discoverFilesStub.onCall(0).returns(Bluebird.resolve([finalArray[0]]));
+            discoverFilesStub.onCall(2).returns(Bluebird.resolve([finalArray[1], finalArray[2]]));
+            return (walker as any).parseIncludedDirectory(rootDirectory, 0)
+            .then((files: string[]) => {
+                files.should.deep.equal(["one", "two", "three"]);
+            });
+        });
+
+        afterEach((): void => {
+            readdirSyncStub.restore();
+            discoverFilesStub.restore();
+            restorePath();
+        });
+    });
+
     // describe("recursiveWalkAndCall", (): void => {
     //     let depthStub: sinon.SinonStub;
     //     let includeThisStub: sinon.SinonStub;
@@ -525,9 +582,9 @@ describe("DirectoryWalker", (): void => {
         prototypeLoggerStub.restore();
     }
 
-    function stubPath(pathToReturn: string = "qqq"): void {
-        normalizeStub = sinon.stub(path, "normalize").returns(pathToReturn);
-        joinStub = sinon.stub(path, "join")
+    function stubPath(): void {
+        normalizeStub = sinon.stub(path as any, "normalize");
+        joinStub = sinon.stub(path as any, "join")
             .callsFake((...args: string[]) => {
                 return args.join("/");
             });
