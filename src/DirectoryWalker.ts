@@ -72,6 +72,10 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         return this.discoverFilesAndExecuteCallback()
             .then(() => {
                 this.logger.info(`Finished walking ${this.rootDirectory}`);
+            })
+            .catch((error: any) => {
+                this.logger.error(error);
+                throw error;
             });
     }
 
@@ -279,16 +283,11 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
     }
 
     private includeThisFileAtDepth(filename: string, depth: number): boolean {
-        if (this.checkDepth(depth)) {
-            return this.includeThisFile(filename);
-        } else {
-            this.logger.debug(`${filename} is outside the maximum depth`);
-        }
-        return false;
+        return this.checkDepth(depth) && this.includeThisFile(filename);
     }
 
-    private parseIncludedDirectory(initialPath: string, depth: number): PromiseLike<string[]> {
-        const foundFiles = [];
+    private parseIncludedDirectory(initialPath: string, depth: number): Bluebird<string[]> {
+        const foundFiles: string[] = [];
         // Force a synchronous read in case the callback does something wonky
         const contents = fs.readdirSync(initialPath);
         return Bluebird.each(contents, (value: string) => {
@@ -302,7 +301,7 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
             });
     }
 
-    private parseIncludedPath(initialPath: string, depth: number): PromiseLike<string[]> {
+    private parseIncludedPath(initialPath: string, depth: number): Bluebird<string[]> {
         const stats = fs.lstatSync(initialPath);
         if (stats.isFile()) {
             return Bluebird.resolve([initialPath]);
@@ -314,18 +313,22 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         return Bluebird.resolve([]);
     }
 
-    private discoverFiles(initialPath: string, depth: number = 0): PromiseLike<string[]> {
+    private discoverFiles(initialPath: string, depth: number = 0): Bluebird<string[]> {
         if (this.includeThisFileAtDepth(initialPath, depth)) {
             return this.parseIncludedPath(initialPath, depth);
         }
         return Bluebird.resolve([]);
     }
 
-    private executeCallbackOnAllDiscoveredFiles(files: string[]): PromiseLike<void> {
-        return Bluebird.each(files, this.callback);
+    private executeCallbackOnAllDiscoveredFiles(files: string[]): Bluebird<void> {
+        return Bluebird.each(files, this.callback)
+            .then((initialFiles: string[]) => {
+                // Bluebird.each resolves with the initial array
+                return Bluebird.resolve();
+            });
     }
 
-    private discoverFilesAndExecuteCallback(): PromiseLike<void> {
+    private discoverFilesAndExecuteCallback(): Bluebird<void> {
         return this.discoverFiles(this.rootDirectory)
             .then((discoveredFiles: string[]) => {
                 return this.executeCallbackOnAllDiscoveredFiles(discoveredFiles);
