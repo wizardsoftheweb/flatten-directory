@@ -137,10 +137,20 @@ export class FlattenDirectoryOptions {
         return options;
     }
 
+    /**
+     * Ensures `maxdepth` is a number. Warns if negative.
+     *
+     * @param {any} maxdepth
+     * Value to validate
+     * @throws TypeError if `maxdepth` is not a number
+     */
     private validateMaxdepth(maxdepth: any): void {
         if (typeof maxdepth !== "number") {
             logger.error(FlattenDirectoryOptions.ERROR_MESSAGES.INVALID_MAXDEPTH);
             throw new TypeError(FlattenDirectoryOptions.ERROR_MESSAGES.INVALID_MAXDEPTH);
+        }
+        if (maxdepth < 0) {
+            logger.warn(`Negative maxdepth (${maxdepth}) will find zero files`);
         }
     }
 

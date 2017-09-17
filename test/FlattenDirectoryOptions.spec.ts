@@ -162,6 +162,25 @@ describe("FlattenDirectoryOptions", (): void => {
         });
     });
 
+    describe("validateMaxdepth", (): void => {
+        beforeEach(resetLoggerStub);
+
+        it("should throw when maxdepth is not a number", (): void => {
+            (optionsParser as any).validateMaxdepth.bind(optionsParser, "not a number")
+                .should.throw(FlattenDirectoryOptions.DEFAULT.INVALID_MAXDEPTH);
+        });
+
+        it("should do nothing when maxdepth is a number", (): void => {
+            (optionsParser as any).validateMaxdepth(47);
+            loggerStub.warn.should.not.have.been.called;
+        });
+
+        it("should warn on negative maxdepth", (): void => {
+            (optionsParser as any).validateMaxdepth(-2);
+            loggerStub.warn.should.have.been.calledOnce;
+        });
+    });
+
     afterEach((): void => {
         optionsParser = null as any;
     });
