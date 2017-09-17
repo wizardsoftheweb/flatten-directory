@@ -17,6 +17,7 @@ import * as winston from "winston";
 import {
     IFlattenDirectoryOptions,
     IFlattenDirectoryOptionsValidated,
+    keysOfIFlattenDirectoryOptions,
 } from "../src/interfaces";
 
 import {
@@ -89,25 +90,46 @@ describe("FlattenDirectoryOptions", (): void => {
         });
 
         it("should remove the logger with the silent option", (): void => {
-            (optionsParser as any).setUpLogger({silent: true});
+            (optionsParser as any).setUpLogger({ silent: true });
             loggerStub.remove.should.have.been.calledOnce;
         });
 
         it("should change the log level if one is passed in", (): void => {
             const logLevel = "qqq";
-            (optionsParser as any).setUpLogger({logLevel, silent: false});
+            (optionsParser as any).setUpLogger({ logLevel, silent: false });
             loggerStub.remove.should.not.have.been.called;
             (loggerStub as any).transports[baseLogger].level.should.equal(logLevel);
         });
 
         it("should do nothing with silent === true and no logLevel", (): void => {
-            (optionsParser as any).setUpLogger({silent: false});
+            (optionsParser as any).setUpLogger({ silent: false });
             loggerStub.remove.should.not.have.been.called;
             (loggerStub as any).transports[baseLogger].level.should.equal(notALogLevel);
         });
 
         afterEach((): void => {
             delete (loggerStub as any).transports;
+        });
+    });
+
+    describe("cleanOptions", (): void => {
+        it("should assign defaults without input", (): void => {
+            const options = (optionsParser as any).cleanOptions();
+            for (const key of keysOfIFlattenDirectoryOptions) {
+                options[key].should.deep.equal(FlattenDirectoryOptions.DEFAULT[key.toUpperCase()]);
+            }
+        });
+
+        it("should use passed-in options when available", (): void => {
+            const sampleOptions = { silent: false, maxdepth: 0 };
+            const options = (optionsParser as any).cleanOptions(sampleOptions);
+            for (const key of keysOfIFlattenDirectoryOptions) {
+                if (sampleOptions.hasOwnProperty(key)) {
+                    options[key].should.deep.equal((sampleOptions as any)[key]);
+                } else {
+                    options[key].should.deep.equal(FlattenDirectoryOptions.DEFAULT[key.toUpperCase()]);
+                }
+            }
         });
     });
 

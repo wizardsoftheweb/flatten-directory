@@ -95,12 +95,21 @@ export class FlattenDirectoryOptions {
         }
     }
 
-    private cleanOptions(args: any): IFlattenDirectoryOptions {
+    /**
+     * Cleans a set of passed-in options, filling in with defaults where
+     * necessary.
+     *
+     * @param  {any}        options
+     * The potential options to clean
+     * @return {IFlattenDirectoryOptions}
+     * A complete `IFlattenDirectoryOptions` with default values
+     */
+    private cleanOptions(options: any = {}): IFlattenDirectoryOptions {
         const cleanedOptions = {} as any;
         for (const key of keysOfIFlattenDirectoryOptions) {
-            if (typeof args[key] !== "undefined") {
-                logger.silly(`Found option ${key} with value ${args[key]}`);
-                cleanedOptions[key] = args[key] as any;
+            if (typeof options[key] !== "undefined") {
+                logger.silly(`Found option ${key} with value ${options[key]}`);
+                cleanedOptions[key] = options[key] as any;
             } else {
                 logger.silly(`Using default option ${key} ${FlattenDirectoryOptions.DEFAULT[key.toUpperCase()]}`);
                 cleanedOptions[key] = (FlattenDirectoryOptions.DEFAULT[key.toUpperCase()] as any);
