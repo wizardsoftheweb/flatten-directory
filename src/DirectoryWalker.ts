@@ -416,3 +416,5 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
             });
     }
 }
+
+export const DEFAULT_MAXDEPTH = DirectoryWalker.DEFAULT_MAXDEPTH;
