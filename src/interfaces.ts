@@ -11,15 +11,22 @@ import * as winston from "winston";
 export const keysOfIFlattenDirectoryOptions = [
     "source",
     "target",
-    "depth",
-    "npmLogLevel",
+    "maxdepth",
+    "silent",
+    "logLevel",
 ];
 
 export interface IFlattenDirectoryOptions {
     source?: string;
     target?: string;
-    depth?: number;
-    npmLogLevel?: winston.NPMLoggingLevel;
+    /**
+     * The maximum depth this walker will descend
+     * @type {number}
+     * @see `man --pager='less -p "-maxdepth levels"' find`
+     */
+    maxdepth?: number;
+    silent?: boolean;
+    logLevel?: winston.NPMLoggingLevel;
 }
 
 export type TNodeCallback = (filename: string, done: (...firstArgIsError: any[]) => void) => void;
