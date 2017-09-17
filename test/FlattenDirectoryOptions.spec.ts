@@ -252,6 +252,57 @@ describe("FlattenDirectoryOptions", (): void => {
         });
     });
 
+    describe("validateOptions", (): void => {
+        let validateMaxdepthStub: sinon.SinonStub;
+        let validatePathStub: sinon.SinonStub;
+
+        const sourcePath = "path/to/source";
+        const targetPath = "path/to/target";
+        const absoluteSource = "/" + sourcePath;
+        const absoluteTarget = "/" + targetPath;
+        const directories = [
+            {
+                absolutePath: absoluteSource,
+                path: sourcePath,
+                target: "source",
+            },
+            {
+                absolutePath: absoluteTarget,
+                path: targetPath,
+                target: "target",
+            },
+        ];
+
+        beforeEach((): void => {
+            validateStub.restore();
+            validateMaxdepthStub = sinon.stub(optionsParser as any, "validateMaxdepth");
+            validatePathStub = sinon.stub(optionsParser as any, "validatePath");
+            validatePathStub.withArgs("source", sourcePath).returns(absoluteSource);
+            validatePathStub.withArgs("target", targetPath).returns(absoluteTarget);
+        });
+
+        it("should validate the directories and return their absolute paths", (): void => {
+            for (const directory of directories) {
+                resolveStub.returns(directory.absolutePath);
+                const mockOptions = {} as any;
+                mockOptions[directory.target] = directory.path;
+                const options = (optionsParser as any).validateOptions(mockOptions);
+                options[directory.target].should.equal(directory.absolutePath);
+            }
+        });
+
+        it("should validate maxdepth", (): void => {
+            const maxdepth = 99999999999;
+            const options = (optionsParser as any).validateOptions({ maxdepth });
+            options.maxdepth.should.equal(maxdepth);
+        });
+
+        afterEach((): void => {
+            validateMaxdepthStub.restore();
+            validatePathStub.restore();
+        });
+    });
+
     afterEach((): void => {
         optionsParser = null as any;
         setupStub.restore();

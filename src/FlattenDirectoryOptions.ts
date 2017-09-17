@@ -185,6 +185,17 @@ export class FlattenDirectoryOptions {
         }
     }
 
+    /**
+     * Validates the given options and returns only the options necessary to
+     * execute `flattenDirectory`.
+     *
+     * @param  {IFlattenDirectoryOptions}          options
+     * Parsed options, either those passed in or the defaults
+     * @return {IFlattenDirectoryOptionsValidated}
+     * A validated set of options that may immediately be used in
+     * `flattenDirectory`
+     * @see `flattenDirectory`
+     */
     private validateOptions(options: IFlattenDirectoryOptions): IFlattenDirectoryOptionsValidated {
         logger.verbose("Validating options");
         this.validateMaxdepth(options.maxdepth);
