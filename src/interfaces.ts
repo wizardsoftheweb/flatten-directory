@@ -8,12 +8,18 @@ import * as winston from "winston";
  * @type {Array}
  * @see [StackOverflow](https://stackoverflow.com/questions/30207661/in-typescript-is-there-a-compile-time-way-to-get-all-the-property-names-defin)
  */
-export const IFlattenDirectoryOptionsKeys = ["source", "target", "depth"];
+export const keysOfIFlattenDirectoryOptions = [
+    "source",
+    "target",
+    "depth",
+    "npmLogLevel",
+];
 
 export interface IFlattenDirectoryOptions {
     source?: string;
     target?: string;
     depth?: number;
+    npmLogLevel?: winston.NPMLoggingLevel;
 }
 
 export type TNodeCallback = (filename: string, done: (...firstArgIsError: any[]) => void) => void;
