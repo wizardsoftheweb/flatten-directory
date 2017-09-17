@@ -154,11 +154,26 @@ export class FlattenDirectoryOptions {
         }
     }
 
-    private validatePath(target: string, directory: any): string {
+    /**
+     * Validates the `directory` path for the `target`. Returns the absolute
+     * path via `path.resolve`.
+     *
+     * @param  {"source" | "target"} target
+     * Is this running on the source or target input?
+     * @param  {any}    directory
+     * A path, not necessarily absolute, to a directory
+     * @return {string}
+     * The absolute path to the target directory
+     * @see `path.resolve`
+     * @see [lstat errors](http://man7.org/linux/man-pages/man2/lstat.2.html#ERRORS)
+     * @todo test if `lstat` catches i/o access on a `chmod`able system
+     */
+    private validatePath(target: "source" | "target", directory: any): string {
         const absolutePath = path.resolve(directory);
         logger.silly(`Absolute ${target} path is ${absolutePath}`);
         if (fs.lstatSync(absolutePath).isDirectory()) {
             logger.verbose(`Checking ${target === "source" ? "read" : "write"} permission on ${target}`);
+            // lstat contains a check for search permissions, but maybe not i/o
             fs.accessSync(
                 absolutePath,
                 target === "source" ? fs.constants.R_OK : fs.constants.W_OK,

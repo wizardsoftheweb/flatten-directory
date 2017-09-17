@@ -11,7 +11,7 @@ const should = chai.should();
 chai.use(sinonChai);
 
 import * as fs from "fs";
-import * as path from "path";
+// import * as path from "path";
 import * as winston from "winston";
 
 import {
@@ -26,38 +26,39 @@ import {
 } from "./stubs/logger-singleton";
 
 const baseLogger = "baseLogger";
+const resolveStub = sinon.stub();
 
 const FlattenDirectoryOptions = proxyquire("../src/FlattenDirectoryOptions", {
     "./logger-singleton": {
         DEFAULT_CONSOLE_TRANSPORT_NAME: baseLogger,
         logger: loggerStub,
     },
+    /* tslint:disable-next-line:object-literal-key-quotes */
+    "path": {
+        "@noCallThru": true,
+        resolve: resolveStub,
+    },
 }).FlattenDirectoryOptions;
 
 describe("FlattenDirectoryOptions", (): void => {
 
     let optionsParser: any;
+    let setupStub: sinon.SinonStub;
+    let validateStub: sinon.SinonStub;
+    let assignStub: sinon.SinonStub;
 
     beforeEach((): void => {
+        setupStub = sinon
+            .stub(FlattenDirectoryOptions.prototype as any, "setUpLogger");
+        validateStub = sinon
+            .stub(FlattenDirectoryOptions.prototype as any, "validateOptions")
+            .returns({});
+        assignStub = sinon
+            .stub(FlattenDirectoryOptions.prototype as any, "assignOptions");
         optionsParser = new FlattenDirectoryOptions();
     });
 
     describe("constructor", (): void => {
-        let setupStub: sinon.SinonStub;
-        let validateStub: sinon.SinonStub;
-        let assignStub: sinon.SinonStub;
-
-        beforeEach((): void => {
-            setupStub = sinon
-                .stub(FlattenDirectoryOptions.prototype as any, "setUpLogger");
-            validateStub = sinon
-                .stub(FlattenDirectoryOptions.prototype as any, "validateOptions")
-                .returns({});
-            assignStub = sinon
-                .stub(FlattenDirectoryOptions.prototype as any, "assignOptions");
-            optionsParser = new FlattenDirectoryOptions();
-        });
-
         it("should set up the logger", (): void => {
             setupStub.should.be.calledOnce;
         });
@@ -66,17 +67,12 @@ describe("FlattenDirectoryOptions", (): void => {
             assignStub.should.be.calledOnce;
             validateStub.should.be.calledAfter(assignStub);
         });
-
-        afterEach((): void => {
-            setupStub.restore();
-            validateStub.restore();
-            assignStub.restore();
-        });
     });
 
     describe("setUpLogger", (): void => {
         const notALogLevel = "not a real log level";
         beforeEach((): void => {
+            setupStub.restore();
             (loggerStub as any).transports = {};
             (loggerStub as any).transports[baseLogger] = {
                 level: notALogLevel,
@@ -137,6 +133,7 @@ describe("FlattenDirectoryOptions", (): void => {
         let cleanStub: sinon.SinonStub;
 
         beforeEach((): void => {
+            assignStub.restore();
             cleanStub = sinon.stub(optionsParser as any, "cleanOptions");
         });
 
@@ -181,7 +178,84 @@ describe("FlattenDirectoryOptions", (): void => {
         });
     });
 
+    describe("validatePath", (): void => {
+        const isDirectory = sinon.stub();
+        let lstatStub: sinon.SinonStub;
+        let accessStub: sinon.SinonStub;
+
+        const absolutePath = "/absolute";
+        const badPath = "bad path";
+        const goodPath = "good path";
+        const notADirectory = "path/to/a/file";
+        const isADirectory = "path/to/directory";
+        const badPermissions = "no/i/o";
+        const goodPermissions = "yes/i/o";
+
+        beforeEach((): void => {
+            validateStub.restore();
+            resolveStub.reset();
+            resolveStub.returns(absolutePath);
+            resolveStub.withArgs(badPath).throws();
+            isDirectory.reset();
+            isDirectory.returns(true);
+            lstatStub = sinon.stub(fs, "lstatSync");
+            lstatStub.returns({ isDirectory });
+            lstatStub.withArgs(notADirectory).throws();
+            accessStub = sinon.stub(fs, "accessSync");
+            accessStub.withArgs(badPermissions).throws();
+        });
+
+        it("should propogate Node errors", (): void => {
+            // path doesn't resolve
+            (optionsParser as any).validatePath.bind(optionsParser, "source", badPath)
+                .should.throw();
+            // lstat throws an error
+            resolveStub.returns(notADirectory);
+            (optionsParser as any).validatePath.bind(optionsParser, "source", goodPath)
+                .should.throw();
+            // access throws
+            resolveStub.returns(badPermissions);
+            (optionsParser as any).validatePath.bind(optionsParser, "source", goodPath)
+                .should.throw();
+        });
+
+        it("should find the absolute path", (): void => {
+            const returnedPath = (optionsParser as any).validatePath("source", goodPath);
+            returnedPath.should.equal(absolutePath);
+            resolveStub.should.have.been.calledOnce;
+        });
+
+        it("should ensure the path is a directory", (): void => {
+            (optionsParser as any).validatePath("source", goodPath);
+            lstatStub.should.have.been.calledOnce;
+            isDirectory.should.have.been.calledOnce;
+            isDirectory.returns(false);
+            (optionsParser as any).validatePath.bind(optionsParser, "source", goodPath)
+                .should.throw(`source${FlattenDirectoryOptions.ERROR_MESSAGES.INVALID_DIRECTORY}`);
+        });
+
+        it("should check read permissions for source", (): void => {
+            (optionsParser as any).validatePath("source", goodPath);
+            accessStub.should.have.been.calledOnce;
+            accessStub.should.have.been.calledWith(absolutePath, fs.constants.R_OK);
+        });
+
+        it("should check write permissions for target", (): void => {
+            (optionsParser as any).validatePath("target", goodPath);
+            accessStub.should.have.been.calledOnce;
+            accessStub.should.have.been.calledWith(absolutePath, fs.constants.W_OK);
+        });
+
+        afterEach((): void => {
+            lstatStub.restore();
+            accessStub.restore();
+        });
+    });
+
     afterEach((): void => {
         optionsParser = null as any;
+        setupStub.restore();
+        validateStub.restore();
+        assignStub.restore();
     });
 });
