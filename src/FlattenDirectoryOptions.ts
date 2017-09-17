@@ -113,7 +113,7 @@ export class FlattenDirectoryOptions {
     }
 }
 
-export function parseOptions(args: any): IFlattenDirectoryOptionsValidated {
+export function parseOptions(args?: any): IFlattenDirectoryOptionsValidated {
     const optionsParser = new FlattenDirectoryOptions(args);
     return optionsParser.options;
 }
