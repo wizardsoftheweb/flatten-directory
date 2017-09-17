@@ -1,7 +1,9 @@
 import { Logger, transports } from "winston";
 
-const logger = new Logger({
-    level: "silly",
+export const DEFAULT_LOG_LEVEL = "silly";
+
+export const logger = new Logger({
+    level: DEFAULT_LOG_LEVEL,
     transports: [
         new (transports.Console)({
             colorize: true,
@@ -10,5 +12,3 @@ const logger = new Logger({
         }),
     ],
 });
-
-export { logger };
