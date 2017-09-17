@@ -19,10 +19,18 @@ import {
     IFlattenDirectoryOptionsValidated,
 } from "../src/interfaces";
 
-import { loggerStub } from "./stubs/logger-singleton";
+import {
+    loggerStub,
+    resetLoggerStub,
+} from "./stubs/logger-singleton";
+
+const baseLogger = "baseLogger";
 
 const FlattenDirectoryOptions = proxyquire("../src/FlattenDirectoryOptions", {
-    "./logger-singleton": {logger: loggerStub},
+    "./logger-singleton": {
+        DEFAULT_CONSOLE_TRANSPORT_NAME: baseLogger,
+        logger: loggerStub,
+    },
 }).FlattenDirectoryOptions;
 
 describe("FlattenDirectoryOptions", (): void => {
@@ -65,8 +73,45 @@ describe("FlattenDirectoryOptions", (): void => {
         });
     });
 
+    describe("setUpLogger", (): void => {
+        const notALogLevel = "not a real log level";
+        beforeEach((): void => {
+            (loggerStub as any).transports = {};
+            (loggerStub as any).transports[baseLogger] = {
+                level: notALogLevel,
+            };
+            resetLoggerStub();
+        });
+
+        it("should remove the logger by default", (): void => {
+            (optionsParser as any).setUpLogger();
+            loggerStub.remove.should.have.been.calledOnce;
+        });
+
+        it("should remove the logger with the silent option", (): void => {
+            (optionsParser as any).setUpLogger({silent: true});
+            loggerStub.remove.should.have.been.calledOnce;
+        });
+
+        it("should change the log level if one is passed in", (): void => {
+            const logLevel = "qqq";
+            (optionsParser as any).setUpLogger({logLevel, silent: false});
+            loggerStub.remove.should.not.have.been.called;
+            (loggerStub as any).transports[baseLogger].level.should.equal(logLevel);
+        });
+
+        it("should do nothing with silent === true and no logLevel", (): void => {
+            (optionsParser as any).setUpLogger({silent: false});
+            loggerStub.remove.should.not.have.been.called;
+            (loggerStub as any).transports[baseLogger].level.should.equal(notALogLevel);
+        });
+
+        afterEach((): void => {
+            delete (loggerStub as any).transports;
+        });
+    });
+
     afterEach((): void => {
         optionsParser = null as any;
     });
-
 });

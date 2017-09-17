@@ -10,6 +10,7 @@ import {
     keysOfIFlattenDirectoryOptions,
 } from "./interfaces";
 import {
+    DEFAULT_CONSOLE_TRANSPORT_NAME,
     DEFAULT_LOG_LEVEL,
     logger,
 } from "./logger-singleton";
@@ -68,20 +69,27 @@ export class FlattenDirectoryOptions {
      * The `maxdepth` to use
      */
     constructor(source?: string | IFlattenDirectoryOptions, target?: string, maxdepth?: number) {
-        this.setUpLogger(source || {});
+        this.setUpLogger(source);
         logger.info("Parsing options");
         this.options = this.validateOptions(this.assignOptions([source, target, maxdepth]));
         logger.info("Options successfully parsed");
     }
 
-    private setUpLogger(args: any): void {
+    /**
+     * Checks the input for logger options.
+     *
+     * @param {any} args
+     * Either an objecting containing logger options from
+     * `IFlattenDirectoryOptions` or something else
+     */
+    private setUpLogger(args: any = {}): void {
         if (typeof args.silent === "undefined" || args.silent === true) {
             logger.remove("baseLogger" as any);
         } else {
             if (typeof args.logLevel !== "undefined") {
                 // It's not actually object access via string literals, but whatever
                 /* tslint:disable-next-line:no-string-literal */
-                logger.transports["baseLogger"].level = args.logLevel;
+                logger.transports[DEFAULT_CONSOLE_TRANSPORT_NAME].level = args.logLevel;
                 logger.verbose(`Changed log level to ${args.logLevel}`);
             }
         }
