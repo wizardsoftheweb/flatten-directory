@@ -71,7 +71,7 @@ export class FlattenDirectoryOptions {
     constructor(source?: string | IFlattenDirectoryOptions, target?: string, maxdepth?: number) {
         this.setUpLogger(source);
         logger.info("Parsing options");
-        this.options = this.validateOptions(this.assignOptions([source, target, maxdepth]));
+        this.options = this.validateOptions(this.assignOptions(source, target, maxdepth));
         logger.info("Options successfully parsed");
     }
 
@@ -118,14 +118,21 @@ export class FlattenDirectoryOptions {
         return cleanedOptions;
     }
 
-    private assignOptions(args: any[]): IFlattenDirectoryOptions {
+    /**
+     * Either chooses to clean the options input or assigns defaults
+     * @param  {any[]}                    ...args
+     * The options or possible input
+     * @return {IFlattenDirectoryOptions}
+     * A complete `IFlattenDirectoryOptions` with default values
+     */
+    private assignOptions(...args: any[]): IFlattenDirectoryOptions {
         logger.verbose("Parsing options");
         const options: IFlattenDirectoryOptions = {};
-        if (args.length === 1 && typeof args[0] !== "string") {
+        if (typeof args[0] === "object") {
             return this.cleanOptions(args[0]);
         }
-        options.source = args[0] || process.cwd();
-        options.target = args[1] || process.cwd();
+        options.source = args[0] || FlattenDirectoryOptions.DEFAULT.SOURCE;
+        options.target = args[1] || FlattenDirectoryOptions.DEFAULT.TARGET;
         options.maxdepth = args[2] || FlattenDirectoryOptions.DEFAULT.MAXDEPTH;
         return options;
     }

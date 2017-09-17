@@ -133,6 +133,35 @@ describe("FlattenDirectoryOptions", (): void => {
         });
     });
 
+    describe("assignOptions", (): void => {
+        let cleanStub: sinon.SinonStub;
+
+        beforeEach((): void => {
+            cleanStub = sinon.stub(optionsParser as any, "cleanOptions");
+        });
+
+        it("should call cleanOptions on args that look like objects", (): void => {
+            (optionsParser as any).assignOptions({ silent: false });
+            cleanStub.should.have.been.calledOnce;
+        });
+
+        it("should call cleanOptions on null (not undefined) source", (): void => {
+            (optionsParser as any).assignOptions(null);
+            cleanStub.should.have.been.calledOnce;
+        });
+
+        it("should assign defaults without parameters", (): void => {
+            const options = (optionsParser as any).assignOptions();
+            options.source.should.deep.equal(FlattenDirectoryOptions.DEFAULT.SOURCE);
+            options.target.should.deep.equal(FlattenDirectoryOptions.DEFAULT.TARGET);
+            options.maxdepth.should.deep.equal(FlattenDirectoryOptions.DEFAULT.MAXDEPTH);
+        });
+
+        afterEach((): void => {
+            cleanStub.restore();
+        });
+    });
+
     afterEach((): void => {
         optionsParser = null as any;
     });
