@@ -1,6 +1,19 @@
 import * as minimatch from "minimatch";
 import * as winston from "winston";
 
+/**
+ * Simple container to hold default values
+ */
+export interface IDefaultContainer {
+    [key: string]: any;
+}
+
+/**
+ * Simple container to hold error messages
+ */
+export interface IErrorMessageContainer {
+    [key: string]: string;
+}
 
 /**
  * Provides an array of the keys in `IFlattenDirectoryOptions`. TypeScript

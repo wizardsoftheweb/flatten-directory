@@ -3,6 +3,8 @@ import * as path from "path";
 
 import { DEFAULT_MAXDEPTH } from "./DirectoryWalker";
 import {
+    IDefaultContainer,
+    IErrorMessageContainer,
     IFlattenDirectoryOptions,
     IFlattenDirectoryOptionsValidated,
     keysOfIFlattenDirectoryOptions,
@@ -12,13 +14,6 @@ import {
     logger,
 } from "./logger-singleton";
 
-interface IDefaultContainer {
-    [key: string]: any;
-}
-
-interface IErrorMessageContainer {
-    [key: string]: string;
-}
 
 export class FlattenDirectoryOptions {
     public static DEFAULT: IDefaultContainer = {
