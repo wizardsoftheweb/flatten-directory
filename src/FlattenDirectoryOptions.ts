@@ -112,8 +112,3 @@ export class FlattenDirectoryOptions {
         return options as IFlattenDirectoryOptionsValidated;
     }
 }
-
-export function parseOptions(args?: any): IFlattenDirectoryOptionsValidated {
-    const optionsParser = new FlattenDirectoryOptions(args);
-    return optionsParser.options;
-}
