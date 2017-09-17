@@ -1,20 +1,18 @@
-import {IFlattenDirectoryOptions} from "./interfaces";
+import { FlattenDirectoryOptions } from "./FlattenDirectoryOptions";
+import { IFlattenDirectoryOptionsValidated } from "./interfaces";
 
-function assignOptions(args: any): IFlattenDirectoryOptions {
-    if (args.length === 1) {
-        if (typeof args === "string") {
-            return { source: args };
-        }
-        return args;
-    }
-    return {};
+/**
+ * Hides `FlattenDirectoryOptions` creation and parsing within a simple method.
+ *
+ * @param  {any}                               args
+ * Options passed to `flattenDirectory`
+ * @return {IFlattenDirectoryOptionsValidated}
+ * Validated options ready for use
+ * @see flattenDirectory
+ */
+function parseOptions(args?: any): IFlattenDirectoryOptionsValidated {
+    const optionsParser = new FlattenDirectoryOptions(args);
+    return optionsParser.options;
 }
 
-function validateOptions(options: IFlattenDirectoryOptions): IFlattenDirectoryOptions {
-    // do nothing
-    return {};
-}
-
-export function parseOptions(args: any): IFlattenDirectoryOptions {
-    return validateOptions(assignOptions(args));
-}
+export { parseOptions };
