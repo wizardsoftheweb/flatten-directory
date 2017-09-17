@@ -14,8 +14,17 @@ import {
     logger,
 } from "./logger-singleton";
 
-
+/**
+ * This class exists solely to wrap options methods into a test instance without
+ * exposing all the individual components.
+ *
+ * @class FlattenDirectoryOptions
+ */
 export class FlattenDirectoryOptions {
+    /**
+     * Holds default values
+     * @type {IDefaultContainer}
+     */
     public static DEFAULT: IDefaultContainer = {
         LOGLEVEL: DEFAULT_LOG_LEVEL,
         MAXDEPTH: DEFAULT_MAXDEPTH,
@@ -23,17 +32,45 @@ export class FlattenDirectoryOptions {
         SOURCE: process.cwd(),
         TARGET: process.cwd(),
     };
+    /**
+     * Holds error messages
+     * @type {IErrorMessageContainer}
+     */
     public static ERROR_MESSAGES: IErrorMessageContainer = {
         INVALID_DIRECTORY: " must be a directory",
         INVALID_MAXDEPTH: "maxdepth must be a number",
     };
 
+    /**
+     * Holds the final options after validation
+     * @type {IFlattenDirectoryOptionsValidated}
+     */
     public options: IFlattenDirectoryOptionsValidated;
 
-    constructor(args: any = {}) {
-        this.setUpLogger(args);
+    /**
+     * Initializes the logger, assigns options, and validates input.
+     *
+     * The object has two signatures:
+     * ```javascript
+     * new FlattenDirectoryOptions(options: IFlattenDirectoryOptions)
+     * ```
+     * or
+     * ```javascript
+     * new FlattenDirectoryOptions([source: string[, target: string[, maxdepth: number]]])
+     * ```
+     * An empty call will load defaults.
+     *
+     * @param {string | IFlattenDirectoryOptions} source
+     * Either the options to use or the path to the source directory
+     * @param {string}    target
+     * The path to the target directory
+     * @param {number}    maxdepth
+     * The `maxdepth` to use
+     */
+    constructor(source?: string | IFlattenDirectoryOptions, target?: string, maxdepth?: number) {
+        this.setUpLogger(source || {});
         logger.info("Parsing options");
-        this.options = this.validateOptions(this.assignOptions([].concat(args)));
+        this.options = this.validateOptions(this.assignOptions([source, target, maxdepth]));
         logger.info("Options successfully parsed");
     }
 
