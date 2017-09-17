@@ -29,6 +29,18 @@ export interface IFlattenDirectoryOptions {
     logLevel?: winston.NPMLoggingLevel;
 }
 
+export interface IFlattenDirectoryOptionsValidated {
+    source: string;
+    target: string;
+    /**
+     * The maximum depth this walker will descend
+     * @type {number}
+     * @see `man --pager='less -p "-maxdepth levels"' find`
+     */
+    maxdepth: number;
+    [key: string]: any;
+}
+
 export type TNodeCallback = (filename: string, done: (...firstArgIsError: any[]) => void) => void;
 
 export type TPromiseLikeCallback = (filename: string) => PromiseLike<void>;
