@@ -5,6 +5,7 @@ const logger = new Logger({
     transports: [
         new (transports.Console)({
             colorize: true,
+            name: "baseLogger",
             timestamp: true,
         }),
     ],
