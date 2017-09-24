@@ -10,8 +10,8 @@ import * as sinonChai from "sinon-chai";
 const should = chai.should();
 chai.use(sinonChai);
 
+import * as Bluebird from "bluebird";
 import * as fs from "fs";
-// import * as path from "path";
 import * as winston from "winston";
 
 import {
@@ -21,6 +21,8 @@ import {
 
 const baseLogger = "baseLogger";
 const resolveStub = sinon.stub();
+const joinStub = sinon.stub();
+const basenameStub = sinon.stub();
 
 const optionsStub = sinon.stub();
 const walkerStub = sinon.stub();
@@ -46,6 +48,8 @@ const DirectoryFlattener = proxyquire("../src/DirectoryFlattener", {
     /* tslint:disable-next-line:object-literal-key-quotes */
     "path": {
         "@noCallThru": true,
+        basename: basenameStub,
+        join: joinStub,
         resolve: resolveStub,
     },
 }).DirectoryFlattener;
@@ -95,6 +99,36 @@ describe("DirectoryFlattener", (): void => {
                 .then(() => {
                     walk.should.have.been.calledOnce;
                 });
+        });
+    });
+
+    describe("copierFactory", (): void => {
+        let readStub: sinon.SinonStub;
+        let writeStub: sinon.SinonStub;
+
+        beforeEach((): void => {
+            factoryStub.restore();
+            readStub = sinon.stub(flattener as any, "readFile").returns(Bluebird.resolve());
+            writeStub = sinon.stub(flattener as any, "writeFile").returns(Bluebird.resolve());
+            joinStub.reset();
+            basenameStub.reset();
+        });
+
+        it("should create a proper i/o chain", (): Bluebird<void> => {
+            const copyFunction = (flattener as any).copierFactory(options.target);
+            return copyFunction("/path/to/input")
+                .then(() => {
+                    readStub.should.have.been.calledOnce;
+                    writeStub.should.have.been.calledOnce;
+                    writeStub.should.have.been.calledAfter(readStub);
+                    joinStub.should.have.been.calledOnce;
+                    basenameStub.should.have.been.calledOnce;
+                });
+        });
+
+        afterEach((): void => {
+            readStub.restore();
+            writeStub.restore();
         });
     });
 

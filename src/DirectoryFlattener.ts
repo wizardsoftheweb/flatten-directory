@@ -28,9 +28,9 @@ export class DirectoryFlattener {
     /** @type {DirectoryWalker} Holds the directory walker */
     private walker: DirectoryWalker;
     /** Promisified `readFile`, exposable for testing */
-    private readFile = Bluebird.promisify(fs.readFile);
+    private readFile: any = Bluebird.promisify(fs.readFile);
     /** Promisified `writeFile`, exposable for testing */
-    private writeFile = Bluebird.promisify(fs.writeFile);
+    private writeFile: any = Bluebird.promisify(fs.writeFile);
 
     /**
      * Parses the passed-in `flattenDirectory` options and sets up a directory
