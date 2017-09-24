@@ -16,6 +16,7 @@ test/**/*.map
 coverage
 logs
 docs
+dist
 # Personal working files (you might not need these)
 scratch.ts
 swap-out.log
