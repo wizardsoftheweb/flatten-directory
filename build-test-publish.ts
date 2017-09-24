@@ -5,11 +5,18 @@ import * as shelljs from "shelljs";
 
 import { logger } from "./src/lib/logger-singleton";
 
+import * as util from "util";
+
 /* tslint:disable-next-line:no-var-requires */
 const config = require("./package.json");
 const tmp = path.join(__dirname, ".flattenTmp");
 
 shelljs.cd(__dirname);
+
+if (!shelljs.which("git")) {
+    logger.error("git required for publication");
+    throw new Error("git not found");
+}
 
 logger.info("Cleaning up previous build(s)");
 
@@ -200,11 +207,33 @@ shelljs.cd(__dirname);
 
 logger.verbose("Build appears to be working");
 
+logger.info("Preparing to publish");
+const branch = execResult("git rev-parse --abbrev-ref HEAD");
+if (branch !== "master") {
+    const errorMessage = "Publication must happen on the master branch";
+    logger.error(errorMessage);
+    throw new Error(errorMessage);
+}
+
+const currentTag = execResult("git describe --abbrev=0 --tags");
+logger.silly(`Most recent tag: ${currentTag}`);
+const currentTagHash = execResult(`git rev-list -n 1 ${currentTag}`);
+logger.silly(`Tag commit hash (not ref): ${currentTagHash}`);
+const masterHash = execResult("git rev-parse HEAD");
+logger.silly(`Master hash: ${masterHash}`);
+if (masterHash !== currentTagHash) {
+    const errorMessage = `${currentTag} and master are on different commits; did you forget to increment the version?`;
+    logger.error(errorMessage);
+    throw new Error(errorMessage);
+}
+
 logger.info("Cleaning up generated files");
 shelljs.rm("-rf", path.join(__dirname, packedTarballName));
 shelljs.rm("-rf", tmp);
 
-throw new Error("Don't publish me");
+function execResult(command: string): string {
+    return (shelljs.exec(command, {silent: true}).stdout as string).trim();
+}
 
 function exec(command: string, errorMessage: string = ""): void {
     const child = shelljs.exec(command, { silent: true }) as shelljs.ExecOutputReturnValue;
