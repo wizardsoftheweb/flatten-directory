@@ -4,6 +4,7 @@ import * as chai from "chai";
 // Needed for describe, it, etc.
 import { } from "mocha";
 import * as proxyquire from "proxyquire";
+proxyquire.noPreserveCache();
 import * as sinon from "sinon";
 import * as sinonChai from "sinon-chai";
 
@@ -22,11 +23,11 @@ describe("parseOptions", (): void => {
 
     before((): void => {
         parseOptions = proxyquire("../src/parseOptions", {
-            "./FlattenDirectoryOptions": { FlattenDirectoryOptions: flattenStub },
+            "./DirectoryFlattenerOptions": { DirectoryFlattenerOptions: flattenStub },
         }).parseOptions;
     });
 
-    it("should create a FlattenDirectoryOptions object", (): void => {
+    it("should create a DirectoryFlattenerOptions object", (): void => {
         parseOptions({ silent: false });
         flattenStub.should.have.been.calledWithNew;
     });

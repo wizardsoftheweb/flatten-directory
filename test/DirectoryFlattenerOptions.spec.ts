@@ -4,6 +4,7 @@ import * as chai from "chai";
 // Needed for describe, it, etc.
 import { } from "mocha";
 import * as proxyquire from "proxyquire";
+proxyquire.noPreserveCache();
 import * as sinon from "sinon";
 import * as sinonChai from "sinon-chai";
 
@@ -15,9 +16,9 @@ import * as fs from "fs";
 import * as winston from "winston";
 
 import {
-    IFlattenDirectoryOptions,
-    IFlattenDirectoryOptionsValidated,
-    keysOfIFlattenDirectoryOptions,
+    IDirectoryFlattenerOptions,
+    IDirectoryFlattenerOptionsValidated,
+    keysOfIDirectoryFlattenerOptions,
 } from "../src/interfaces";
 
 import {
@@ -28,7 +29,7 @@ import {
 const baseLogger = "baseLogger";
 const resolveStub = sinon.stub();
 
-const FlattenDirectoryOptions = proxyquire("../src/FlattenDirectoryOptions", {
+const DirectoryFlattenerOptions = proxyquire("../src/DirectoryFlattenerOptions", {
     "./logger-singleton": {
         DEFAULT_CONSOLE_TRANSPORT_NAME: baseLogger,
         logger: loggerStub,
@@ -38,9 +39,9 @@ const FlattenDirectoryOptions = proxyquire("../src/FlattenDirectoryOptions", {
         "@noCallThru": true,
         resolve: resolveStub,
     },
-}).FlattenDirectoryOptions;
+}).DirectoryFlattenerOptions;
 
-describe("FlattenDirectoryOptions", (): void => {
+describe("DirectoryFlattenerOptions", (): void => {
 
     let optionsParser: any;
     let setupStub: sinon.SinonStub;
@@ -49,13 +50,13 @@ describe("FlattenDirectoryOptions", (): void => {
 
     beforeEach((): void => {
         setupStub = sinon
-            .stub(FlattenDirectoryOptions.prototype as any, "setUpLogger");
+            .stub(DirectoryFlattenerOptions.prototype as any, "setUpLogger");
         validateStub = sinon
-            .stub(FlattenDirectoryOptions.prototype as any, "validateOptions")
+            .stub(DirectoryFlattenerOptions.prototype as any, "validateOptions")
             .returns({});
         assignStub = sinon
-            .stub(FlattenDirectoryOptions.prototype as any, "assignOptions");
-        optionsParser = new FlattenDirectoryOptions();
+            .stub(DirectoryFlattenerOptions.prototype as any, "assignOptions");
+        optionsParser = new DirectoryFlattenerOptions();
     });
 
     describe("constructor", (): void => {
@@ -111,19 +112,19 @@ describe("FlattenDirectoryOptions", (): void => {
     describe("cleanOptions", (): void => {
         it("should assign defaults without input", (): void => {
             const options = (optionsParser as any).cleanOptions();
-            for (const key of keysOfIFlattenDirectoryOptions) {
-                options[key].should.deep.equal(FlattenDirectoryOptions.DEFAULT[key.toUpperCase()]);
+            for (const key of keysOfIDirectoryFlattenerOptions) {
+                options[key].should.deep.equal(DirectoryFlattenerOptions.DEFAULT[key.toUpperCase()]);
             }
         });
 
         it("should use passed-in options when available", (): void => {
             const sampleOptions = { silent: false, maxdepth: 0 };
             const options = (optionsParser as any).cleanOptions(sampleOptions);
-            for (const key of keysOfIFlattenDirectoryOptions) {
+            for (const key of keysOfIDirectoryFlattenerOptions) {
                 if (sampleOptions.hasOwnProperty(key)) {
                     options[key].should.deep.equal((sampleOptions as any)[key]);
                 } else {
-                    options[key].should.deep.equal(FlattenDirectoryOptions.DEFAULT[key.toUpperCase()]);
+                    options[key].should.deep.equal(DirectoryFlattenerOptions.DEFAULT[key.toUpperCase()]);
                 }
             }
         });
@@ -149,9 +150,9 @@ describe("FlattenDirectoryOptions", (): void => {
 
         it("should assign defaults without parameters", (): void => {
             const options = (optionsParser as any).assignOptions();
-            options.source.should.deep.equal(FlattenDirectoryOptions.DEFAULT.SOURCE);
-            options.target.should.deep.equal(FlattenDirectoryOptions.DEFAULT.TARGET);
-            options.maxdepth.should.deep.equal(FlattenDirectoryOptions.DEFAULT.MAXDEPTH);
+            options.source.should.deep.equal(DirectoryFlattenerOptions.DEFAULT.SOURCE);
+            options.target.should.deep.equal(DirectoryFlattenerOptions.DEFAULT.TARGET);
+            options.maxdepth.should.deep.equal(DirectoryFlattenerOptions.DEFAULT.MAXDEPTH);
         });
 
         afterEach((): void => {
@@ -164,7 +165,7 @@ describe("FlattenDirectoryOptions", (): void => {
 
         it("should throw when maxdepth is not a number", (): void => {
             (optionsParser as any).validateMaxdepth.bind(optionsParser, "not a number")
-                .should.throw(FlattenDirectoryOptions.DEFAULT.INVALID_MAXDEPTH);
+                .should.throw(DirectoryFlattenerOptions.DEFAULT.INVALID_MAXDEPTH);
         });
 
         it("should do nothing when maxdepth is a number", (): void => {
@@ -231,7 +232,7 @@ describe("FlattenDirectoryOptions", (): void => {
             isDirectory.should.have.been.calledOnce;
             isDirectory.returns(false);
             (optionsParser as any).validatePath.bind(optionsParser, "source", goodPath)
-                .should.throw(`source${FlattenDirectoryOptions.ERROR_MESSAGES.INVALID_DIRECTORY}`);
+                .should.throw(`source${DirectoryFlattenerOptions.ERROR_MESSAGES.INVALID_DIRECTORY}`);
         });
 
         it("should check read permissions for source", (): void => {
