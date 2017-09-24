@@ -84,7 +84,11 @@ export class FlattenDirectoryOptions {
      */
     private setUpLogger(args: any = {}): void {
         if (typeof args.silent === "undefined" || args.silent === true) {
-            logger.remove("baseLogger" as any);
+            // ensure transport wasn't previously removed
+            /* istanbul ignore else */
+            if (typeof logger.transports[DEFAULT_CONSOLE_TRANSPORT_NAME] !== "undefined") {
+                logger.remove("baseLogger" as any);
+            }
         } else {
             if (typeof args.logLevel !== "undefined") {
                 // It's not actually object access via string literals, but whatever
