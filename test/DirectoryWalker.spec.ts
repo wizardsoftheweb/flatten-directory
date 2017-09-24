@@ -633,6 +633,29 @@ describe("DirectoryWalker", (): void => {
                     callbackStub.callCount.should.equal(arrayOfFiles.length);
                 });
         });
+
+        it("should reject when the callback is not thenable", (): Bluebird<any> => {
+            (walker as any).callback = (input: string) => {
+                return "cool";
+            };
+            return (walker as any).executeCallbackOnAllDiscoveredFiles(arrayOfFiles)
+                .catch((rejection: any) => {
+                    rejection.should.be.an("error");
+                    rejection.message.should.equal(DirectoryWalker.ERROR_NOT_THENABLE);
+                });
+        });
+
+        it("should propogate unknown errors", (): Bluebird<any> => {
+            const errorMessage = "error message";
+            (walker as any).callback = (input: string) => {
+                throw new Error(errorMessage);
+            };
+            return (walker as any).executeCallbackOnAllDiscoveredFiles(arrayOfFiles)
+                .catch((rejection: any) => {
+                    rejection.should.be.an("error");
+                    rejection.message.should.equal(errorMessage);
+                });
+        });
     });
 
     describe("discoverFilesAndExecuteCallback", (): void => {
