@@ -45,16 +45,18 @@ man --pager='less -p "-maxdepth levels"' find
 `find`'s `maxdepth` works just a little bit differently than you might expect. The short version is that `-maxdepth 0` only searches the files passed in, while `-maxdepth 1` searches the files passed in and their children (if any).
 
 #### Detailed Explanation
+
+If you're comfortable with the man page, you can skip this entire section.
+
 ##### Setup
 
 Create a directory tree with several nested subdirectories and files. Or, run this ( [`tree`](https://linux.die.net/man/1/tree) isn't usually a default install so it's guarded):
 ```
 $ mkdir -pv $TMPDIR/depth0Directory/depth1Directory/depth2Directory \
-| awk -F "'" 'match($2, /([0-9])Directory$/, a) { print $2 "/depth" (a[1] + 1) "File"; }' \
-| xargs -n 1 touch; \
-which tree && tree $TMPDIR/depth0Directory
-```
-```
+    | awk -F "'" 'match($2, /([0-9])Directory$/, a) { print $2 "/depth" (a[1] + 1) "File"; }' \
+    | xargs -n 1 touch; \
+    which tree && tree $TMPDIR/depth0Directory
+
 depth0Directory
 ├── depth1Directory
 │   ├── depth2Directory
@@ -67,19 +69,18 @@ depth0Directory
     * `-F "'"`: `mkdir` uses [`quoteaf`](https://github.com/coreutils/coreutils/blob/master/src/mkdir.c#L113), which calls [`quotearg_style`](https://github.com/coreutils/coreutils/blob/master/src/system.h#L780), which uses [`quotearg_style` from `gnulib`](https://github.com/coreutils/gnulib/blob/master/lib/quotearg.c#L290). If you don't want to follow all those links (that was probably two hours of my life; I'm not great at navigating `c` repos), [this test from GNU `coreutils`](https://github.com/coreutils/coreutils/blob/master/tests/mkdir/p-v.sh) will have to serve as justification for changing the separator to `'`. If you've never seen `-F`/`FS =`, check out the following example:
         ```bash
         $ mkdir -vp foo/bar \
-        | awk '{ \
-            input = $0; \
-            print "\nInitial input ($0): \"" input "\""; \
-            split(input, a, FS); \
-            print "Default separator (" FS "):"; \
-            print "\t$1: \"" a[1] "\"\n\t$2: \"" a[2] "\""; \
-            split(input, a, "'\''"); \
-            print "Single quote separator ('\''): "; \
-            print "\t$1: \"" a[1] "\"\n\t$2: \"" a[2] "\""; \
-        }'; \
-        rm -rf foo;
-        ```
-        ```
+            | awk '{ \
+                input = $0; \
+                print "\nInitial input ($0): \"" input "\""; \
+                split(input, a, FS); \
+                print "Default separator (" FS "):"; \
+                print "\t$1: \"" a[1] "\"\n\t$2: \"" a[2] "\""; \
+                split(input, a, "'\''"); \
+                print "Single quote separator ('\''): "; \
+                print "\t$1: \"" a[1] "\"\n\t$2: \"" a[2] "\""; \
+            }'; \
+            rm -rf foo;
+
         Initial input ($0): "mkdir: created directory 'foo'"
         Default separator ( ):
              $1: "mkdir:"
@@ -109,51 +110,41 @@ depth0Directory
 # This assumes the setup above; if you didn't do it, use your imagination
 $ cd $TMPDIR
 $ find depth0Directory -name "depth*"
-```
-```
+
 depth0Directory
 depth0Directory/depth1Directory
 depth0Directory/depth1Directory/depth2Directory
 depth0Directory/depth1Directory/depth2Directory/depth3File
 depth0Directory/depth1Directory/depth2File
 depth0Directory/depth1File
-```
-```bash
+
 $ find depth0Directory -maxdepth 1 -name "depth*"
-```
-```
+
 depth0Directory
 depth0Directory/depth1Directory
 depth0Directory/depth1File
-```
-```bash
+
 $ find depth0Directory -maxdepth 0 -name "depth*"
-```
-```
+
 depth0Directory
 ```
 The rest assumes you don't have any other files named `'depth*'` in `$TMPDIR`.
 ```bash
 $ find . -name "depth*"
-```
-```
+
 ./depth0Directory
 ./depth0Directory/depth1Directory
 ./depth0Directory/depth1Directory/depth2Directory
 ./depth0Directory/depth1Directory/depth2Directory/depth3File
 ./depth0Directory/depth1Directory/depth2File
 ./depth0Directory/depth1File
-```
-```bash
+
 $ find . -maxdepth 1 -name "depth*"
-```
-```
+
 ./depth0Directory
-```
-```bash
+
 $ find . -maxdepth 0 -name "depth*"
-```
-```
+
 
 ```
 
