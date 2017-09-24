@@ -130,7 +130,8 @@ export class DirectoryFlattenerOptions {
      * A complete `IDirectoryFlattenerOptions` with default values
      */
     private assignOptions(...args: any[]): IDirectoryFlattenerOptions {
-        logger.verbose("Parsing options");
+        logger.verbose(`Parsing input and assigning defaults`);
+        logger.silly(`Received input "${JSON.stringify(args)}"`);
         const options: IDirectoryFlattenerOptions = {};
         if (typeof args[0] === "object") {
             return this.cleanOptions(args[0]);
