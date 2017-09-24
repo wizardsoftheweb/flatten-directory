@@ -2,9 +2,6 @@ import * as Bluebird from "bluebird";
 import * as fs from "fs";
 import * as path from "path";
 
-const readFileBluebird = Bluebird.promisify(fs.readFile);
-const writeFileBluebird = Bluebird.promisify(fs.writeFile);
-
 import { DirectoryFlattenerOptions } from "./DirectoryFlattenerOptions";
 import { DirectoryWalker } from "./DirectoryWalker";
 import {
@@ -30,6 +27,10 @@ export class DirectoryFlattener {
     private flattenerOptions: DirectoryFlattenerOptions;
     /** @type {DirectoryWalker} Holds the directory walker */
     private walker: DirectoryWalker;
+    /** Promisified `readFile`, exposable for testing */
+    private readFile = Bluebird.promisify(fs.readFile);
+    /** Promisified `writeFile`, exposable for testing */
+    private writeFile = Bluebird.promisify(fs.writeFile);
 
     /**
      * Parses the passed-in `flattenDirectory` options and sets up a directory
@@ -74,12 +75,13 @@ export class DirectoryFlattener {
      * Final file resting place
      * @return {TPromiseLikeCallback}
      * A function that takes a filename as its only argument
+     * @todo expose file encoding
      */
     private copierFactory(target: string): TPromiseLikeCallback {
         return (filename: string) => {
-            return (readFileBluebird as any)(filename, "utf-8")
+            return (this.readFile as any)(filename, "utf-8")
                 .then((data: any) => {
-                    return (writeFileBluebird as any)(
+                    return (this.writeFile as any)(
                         path.join(target, path.basename(filename)),
                         data,
                         "utf-8",
