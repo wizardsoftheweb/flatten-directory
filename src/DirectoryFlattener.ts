@@ -86,12 +86,12 @@ export class DirectoryFlattener {
                 logger.warn(`${target}${path.sep}${basename} already written; overwriting with ${filename}`);
             }
             this.writtenFiles[basename] = filename;
-            return (this.readFile as any)(filename, "utf8")
+            return (this.readFile as any)(filename, this.flattenerOptions.options.encoding)
                 .then((data: any) => {
                     return (this.writeFile as any)(
                         path.join(target, path.basename(filename)),
                         data,
-                        "utf8",
+                        this.flattenerOptions.options.encoding,
                     );
                 });
         };
