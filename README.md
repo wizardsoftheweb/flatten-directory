@@ -179,7 +179,9 @@ Once all of these are finished, I'll release `v1`. Until then, `v0` should be us
 |    100% | Finish `flattenDirectory` |
 |    100% | Add file encoding option because not everyone uses `utf8` |
 |    100% | Check `basename` of filelist and warn that duplicates will be clobbered |
-|      0% | Set up `index` properly |
+|     60% | Set up `index` properly |
+|      0% | Export the full namespace |
+|     80% | Compile declaration file |
 |      0% | Compile docs from source |
 |      0% | Incorporate `@todo`s somewhere prominent in the docs |
 |      0% | Figure out where to insert [man find link](http://man7.org/linux/man-pages/man1/find.1.html) in the docs as `@see` |
@@ -199,3 +201,5 @@ These are things I'd like to add, but probably won't be included in `v1`. If not
 |      0% | Add some of the options from `DirectoryWalker` to `flattenDirectory` |
 |      0% | Add destructive flattening option, e.g. `mv` instead of `cp` (currently just copying files) |
 |      0% | Add clobber option |
+|      0% | Production install |
+|      0% | Dev install |
