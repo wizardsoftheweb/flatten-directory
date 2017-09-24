@@ -177,8 +177,8 @@ Once all of these are finished, I'll release `v1`. Until then, `v0` should be us
 |    100% | Link some internet version of `man find` |
 |    100% | Finish `parseOptions` |
 |    100% | Finish `flattenDirectory` |
-|      0% | Add file encoding option because not everyone uses `utf8` |
-|      0% | Check `basename` of filelist and warn that duplicates will be clobbered |
+|    100% | Add file encoding option because not everyone uses `utf8` |
+|    100% | Check `basename` of filelist and warn that duplicates will be clobbered |
 |      0% | Set up `index` properly |
 |      0% | Compile docs from source |
 |      0% | Incorporate `@todo`s somewhere prominent in the docs |
