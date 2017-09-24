@@ -172,6 +172,8 @@ Once all of these are finished, I'll release `v1`. Until then, `v0` should be us
 |      0% | Compile docs from source |
 |      0% | Publish package on `npm` |
 |      0% | Switch defaults (branch, badges) from `dev` to `master` |
+|      0% | Add file encoding option because not everyone uses `utf-8` |
+|      0% | Incorporate `@todo`s somewhere prominent in the docs |
 
 ### Eventual features
 
@@ -182,3 +184,5 @@ These are things I'd like to add, but probably won't be included in `v1`. If not
 |      0% | Strip discovery from `DirectoryWalker` |
 |      0% | Convert `DiscoveryWalker` to a function |
 |      0% | [Greenkeeper](https://greenkeeper.io/) (or similar) integration |
+|      0% | Add some of the options from `DirectoryWalker` to `flattenDirectory` |
+|      0% | Add destructive flattening option, e.g. `mv` instead of `cp` (currently just copying files) |
