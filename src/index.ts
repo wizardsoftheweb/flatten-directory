@@ -1,3 +1,3 @@
 import { flattenDirectory } from "./lib/flattenDirectory";
 
-export { flattenDirectory };
+export default flattenDirectory;
