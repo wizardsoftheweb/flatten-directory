@@ -2,7 +2,11 @@
   "name": "@wizardsoftheweb/flatten-directory",
   "version": "0.5.0",
   "description": "Flattens a source directory into a target directory",
-  "main": "index.js",
+  "files": [
+    "./dist/**/*",
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "directories": {
     "test": "test"
   },
