@@ -54,15 +54,13 @@ export interface IDirectoryFlattenerOptionsValidated {
     [key: string]: any;
 }
 
-export type TNodeCallback = (filename: string, done: (...firstArgIsError: any[]) => void) => void;
-
 export type TPromiseLikeCallback = (filename: string) => PromiseLike<void>;
 
 export type TIncludeThisPathFunction = (filename: string) => boolean;
 
 export interface IWalkOptions {
     root: string;
-    callback: TNodeCallback | TPromiseLikeCallback;
+    callback: TPromiseLikeCallback;
     logFile?: string;
     /**
      * The maximum depth this walker will descend

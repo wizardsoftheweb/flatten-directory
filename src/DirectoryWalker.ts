@@ -7,7 +7,6 @@ import * as winston from "winston";
 import {
     IWalkOptions,
     TIncludeThisPathFunction,
-    TNodeCallback,
     TPromiseLikeCallback,
 } from "./interfaces";
 
@@ -70,7 +69,7 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         this.validateOrCreateLogger(options);
         this.logger.info("Preparing DirectoryWalker");
         this.rootDirectory = path.normalize(options.root);
-        this.callback = Bluebird.promisify(options.callback);
+        this.callback = options.callback;
         this.maxdepth = options.maxdepth || DirectoryWalker.DEFAULT_MAXDEPTH;
         this.includeThisFile = this.includeThisFileMethodFactory(options);
     }
