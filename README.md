@@ -186,3 +186,4 @@ These are things I'd like to add, but probably won't be included in `v1`. If not
 |      0% | [Greenkeeper](https://greenkeeper.io/) (or similar) integration |
 |      0% | Add some of the options from `DirectoryWalker` to `flattenDirectory` |
 |      0% | Add destructive flattening option, e.g. `mv` instead of `cp` (currently just copying files) |
+|      0% | Add clobber option |
