@@ -27,6 +27,7 @@ export class DirectoryFlattenerOptions {
      * @type {IDefaultContainer}
      */
     public static DEFAULT: IDefaultContainer = {
+        ENCODING: "utf8",
         LOGLEVEL: DEFAULT_LOG_LEVEL,
         MAXDEPTH: DEFAULT_MAXDEPTH,
         SILENT: true,
@@ -139,6 +140,8 @@ export class DirectoryFlattenerOptions {
         options.source = args[0] || DirectoryFlattenerOptions.DEFAULT.SOURCE;
         options.target = args[1] || DirectoryFlattenerOptions.DEFAULT.TARGET;
         options.maxdepth = args[2] || DirectoryFlattenerOptions.DEFAULT.MAXDEPTH;
+        // If we've made it this far, the encoding wasn't specified
+        options.encoding = DirectoryFlattenerOptions.DEFAULT.ENCODING;
         return options;
     }
 
