@@ -174,16 +174,16 @@ Once all of these are finished, I'll release `v1`. Until then, `v0` should be us
 | Progess | Feature |
 | ------: | ------- |
 |      0% | Add `include` options to `IWalkOptions` |
-|     80% | Walk the initial directory, collecting files that aren't excluded within `maxdepth` |
+|    100% | Walk the initial directory, collecting files that aren't excluded by `maxdepth` |
 |    100% | Link some internet version of `man find` |
 |      0% | Figure out where to insert [man find link](http://man7.org/linux/man-pages/man1/find.1.html) |
 |    100% | Finish `parseOptions` |
-|      5% | Finish `flattenDirectory` |
+|    100% | Finish `flattenDirectory` |
 |      0% | Set up `index` properly |
 |      0% | Compile docs from source |
 |      0% | Publish package on `npm` |
 |      0% | Switch defaults (branch, badges) from `dev` to `master` |
-|      0% | Add file encoding option because not everyone uses `utf-8` |
+|      0% | Add file encoding option because not everyone uses `utf8` |
 |      0% | Incorporate `@todo`s somewhere prominent in the docs |
 |      0% | Check `basename` of filelist for duplicates |
 
