@@ -8,6 +8,7 @@ This package takes a source directory, parses its contents, and moves everything
 
 - [Installation](#installation)
     - [Dev version](#devversion)
+- [Tests](#tests)
 - [Usage](#usage)
     - [`maxdepth`](#maxdepth)
         - [Brief Explanation](#briefexplanation)
@@ -29,6 +30,16 @@ This is just until it's published.
 
 ```
 npm install --save git+https://github.com/wizardsoftheweb/flatten-directory
+```
+
+## Tests
+
+```bash
+npm t
+```
+I've written a (currently small) integration test for `flattenDirectory`. It will run automatically with the rest of the tests. If you want to isolate its results, you can run the `test:integration-only` script.
+```bash
+npm run test:integration-only
 ```
 
 ## Usage
