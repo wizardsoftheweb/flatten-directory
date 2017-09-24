@@ -16,12 +16,12 @@ export interface IErrorMessageContainer {
 }
 
 /**
- * Provides an array of the keys in `IFlattenDirectoryOptions`. TypeScript
+ * Provides an array of the keys in `IDirectoryFlattenerOptions`. TypeScript
  * doesn't provide access to all the keys without some serious extra work.
  * @type {Array}
  * @see [StackOverflow](https://stackoverflow.com/questions/30207661/in-typescript-is-there-a-compile-time-way-to-get-all-the-property-names-defin)
  */
-export const keysOfIFlattenDirectoryOptions = [
+export const keysOfIDirectoryFlattenerOptions = [
     "source",
     "target",
     "maxdepth",
@@ -29,7 +29,7 @@ export const keysOfIFlattenDirectoryOptions = [
     "logLevel",
 ];
 
-export interface IFlattenDirectoryOptions {
+export interface IDirectoryFlattenerOptions {
     source?: string;
     target?: string;
     /**
@@ -42,7 +42,7 @@ export interface IFlattenDirectoryOptions {
     logLevel?: winston.NPMLoggingLevel;
 }
 
-export interface IFlattenDirectoryOptionsValidated {
+export interface IDirectoryFlattenerOptionsValidated {
     source: string;
     target: string;
     /**
@@ -54,15 +54,13 @@ export interface IFlattenDirectoryOptionsValidated {
     [key: string]: any;
 }
 
-export type TNodeCallback = (filename: string, done: (...firstArgIsError: any[]) => void) => void;
-
 export type TPromiseLikeCallback = (filename: string) => PromiseLike<void>;
 
 export type TIncludeThisPathFunction = (filename: string) => boolean;
 
 export interface IWalkOptions {
     root: string;
-    callback: TNodeCallback | TPromiseLikeCallback;
+    callback: TPromiseLikeCallback;
     logFile?: string;
     /**
      * The maximum depth this walker will descend

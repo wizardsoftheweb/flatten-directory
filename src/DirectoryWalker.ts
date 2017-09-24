@@ -7,7 +7,6 @@ import * as winston from "winston";
 import {
     IWalkOptions,
     TIncludeThisPathFunction,
-    TNodeCallback,
     TPromiseLikeCallback,
 } from "./interfaces";
 
@@ -34,6 +33,8 @@ export class DirectoryWalker {
     /** @type {string} Error message to throw when `options.Logger` is not a `winston.Logger` */
     public static ERROR_NOT_A_WINSTON = `\
 logger must be an instance of winston.Logger (i.e. logger instanceof winston.Logger === true)`;
+    public static ERROR_NOT_THENABLE = `\
+DirectoryWalker callback must return a thenable object (e.g. Promise)`;
 
     /** @type {TPromiseLikeCallback} Callback to run on each file */
     private callback: TPromiseLikeCallback;
@@ -70,7 +71,7 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
         this.validateOrCreateLogger(options);
         this.logger.info("Preparing DirectoryWalker");
         this.rootDirectory = path.normalize(options.root);
-        this.callback = Bluebird.promisify(options.callback);
+        this.callback = options.callback;
         this.maxdepth = options.maxdepth || DirectoryWalker.DEFAULT_MAXDEPTH;
         this.includeThisFile = this.includeThisFileMethodFactory(options);
     }
@@ -394,7 +395,26 @@ logger must be an instance of winston.Logger (i.e. logger instanceof winston.Log
      * Resolves with `void` when finished
      */
     private executeCallbackOnAllDiscoveredFiles(files: string[]): Bluebird<void> {
-        return Bluebird.each(files, this.callback)
+        return Bluebird.each(
+            files,
+            (filename: string) => {
+                return new Bluebird((resolve, reject) => {
+                    this.callback(filename)
+                        // Should throw if the object is not `PromiseLike`
+                        .then(() => {
+                            return resolve();
+                        });
+                })
+                    .catch((error: any) => {
+                        // If it's not a TypeError, it should be propogated up the chain
+                        /* istanbul ignore else */
+                        if (error.message.includes("then is not a function")) {
+                            return Bluebird.reject(new Error(DirectoryWalker.ERROR_NOT_THENABLE));
+                        }
+                        return Bluebird.reject(error);
+                    });
+            },
+        )
             .then((initialFiles: string[]) => {
                 this.logger.silly(initialFiles as any);
                 // Bluebird.each resolves with the initial array
