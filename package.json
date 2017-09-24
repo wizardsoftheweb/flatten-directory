@@ -8,6 +8,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
+    "prepublishOnly": "ts-node build-test-publish",
     "test": "cross-env NODE_ENV=test nyc mocha",
     "test:integration-only": "mocha test/flattenDirectory.integration.ts",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
