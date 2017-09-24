@@ -4,6 +4,7 @@ import * as chai from "chai";
 // Needed for describe, it, etc.
 import { } from "mocha";
 import * as proxyquire from "proxyquire";
+proxyquire.noPreserveCache();
 import * as sinon from "sinon";
 import * as sinonChai from "sinon-chai";
 
