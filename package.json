@@ -14,7 +14,8 @@
     "test": "cross-env NODE_ENV=test nyc mocha",
     "test:integration-only": "mocha test/flattenDirectory.integration.ts",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "prepublishOnly": "tsc --p tsconfig.npm.json"
+    "prepublishOnly": "tsc --p tsconfig.npm.json",
+    "nix:compile": "rm -rf ./dist; tsc --p tsconfig.npm.json"
   },
   "author": "CJ Harries <cj@wizardsoftheweb.pro> (https://wizardsoftheweb.pro/)",
   "license": "ISC",
@@ -61,7 +62,8 @@
       "src/lib/*.ts"
     ],
     "exclude": [
-      "src/**/*interfaces.ts"
+      "src/**/*interfaces.ts",
+      "dist"
     ],
     "extension": [
       ".ts"
