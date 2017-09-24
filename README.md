@@ -174,6 +174,7 @@ Once all of these are finished, I'll release `v1`. Until then, `v0` should be us
 |      0% | Switch defaults (branch, badges) from `dev` to `master` |
 |      0% | Add file encoding option because not everyone uses `utf-8` |
 |      0% | Incorporate `@todo`s somewhere prominent in the docs |
+|      0% | Check `basename` of filelist for duplicates |
 
 ### Eventual features
 
