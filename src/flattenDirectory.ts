@@ -2,11 +2,7 @@ import * as Bluebird from "bluebird";
 import * as fs from "fs";
 import * as path from "path";
 
-import { IFlattenDirectoryOptions } from "./interfaces";
-import { parseOptions } from "./parseOptions";
-
-export function flattenDirectory(...args: any[]): Bluebird<any> {
-    const options: IFlattenDirectoryOptions = parseOptions(args);
+export function flattenDirectory(...args: any[]): PromiseLike<void> {
     // do nothing
     return Bluebird.resolve();
 }
