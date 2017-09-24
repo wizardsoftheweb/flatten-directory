@@ -27,6 +27,7 @@ export const keysOfIDirectoryFlattenerOptions = [
     "maxdepth",
     "silent",
     "logLevel",
+    "encoding",
 ];
 
 export interface IDirectoryFlattenerOptions {
@@ -40,6 +41,7 @@ export interface IDirectoryFlattenerOptions {
     maxdepth?: number;
     silent?: boolean;
     logLevel?: winston.NPMLoggingLevel;
+    encoding?: string;
 }
 
 export interface IDirectoryFlattenerOptionsValidated {
@@ -51,6 +53,7 @@ export interface IDirectoryFlattenerOptionsValidated {
      * @see `man --pager='less -p "-maxdepth levels"' find`
      */
     maxdepth: number;
+    encoding: string;
     [key: string]: any;
 }
 
