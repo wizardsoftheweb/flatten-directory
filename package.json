@@ -11,7 +11,8 @@
     "test": "cross-env NODE_ENV=test nyc mocha",
     "test:integration-only": "mocha test/flattenDirectory.integration.ts",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "compile:npm": "tsc --p tsconfig.npm.json"
+    "compile:npm": "tsc --p tsconfig.npm.json",
+    "lint": "tslint -c ./tslint.json -p ./tsconfig.json src/**/*.ts"
   },
   "author": "CJ Harries <cj@wizardsoftheweb.pro> (https://wizardsoftheweb.pro/)",
   "license": "ISC",
