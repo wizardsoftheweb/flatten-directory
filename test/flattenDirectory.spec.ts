@@ -22,7 +22,7 @@ describe("flattenDirectory", (): void => {
     let flattenDirectory: any;
 
     before((): void => {
-        flattenDirectory = proxyquire("../src/flattenDirectory", {
+        flattenDirectory = proxyquire("../src/lib/flattenDirectory", {
             "./DirectoryFlattener": { DirectoryFlattener: flattenStub },
         }).flattenDirectory;
     });

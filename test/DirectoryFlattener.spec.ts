@@ -15,7 +15,7 @@ import * as Bluebird from "bluebird";
 import * as fs from "fs";
 import * as winston from "winston";
 
-import { TPromiseLikeCallback } from "../src/interfaces";
+import { TPromiseLikeCallback } from "../src/lib/interfaces";
 
 import {
     loggerStub,
@@ -37,7 +37,7 @@ const options = {
     target: dummyArgs[1] + "/qqq",
 };
 
-const DirectoryFlattener = proxyquire("../src/DirectoryFlattener", {
+const DirectoryFlattener = proxyquire("../src/lib/DirectoryFlattener", {
     "./DirectoryFlattenerOptions": {
         DirectoryFlattenerOptions: optionsStub.returns({ options }),
     },

@@ -15,14 +15,14 @@ import * as fs from "fs";
 import * as path from "path";
 import * as winston from "winston";
 
-import { logger } from "../src/logger-singleton";
+import { logger } from "../src/lib/logger-singleton";
 
 describe("parseOptions", (): void => {
     const flattenStub = sinon.stub();
     let parseOptions: any;
 
     before((): void => {
-        parseOptions = proxyquire("../src/parseOptions", {
+        parseOptions = proxyquire("../src/lib/parseOptions", {
             "./DirectoryFlattenerOptions": { DirectoryFlattenerOptions: flattenStub },
         }).parseOptions;
     });

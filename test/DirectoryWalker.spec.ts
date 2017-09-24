@@ -14,8 +14,8 @@ import * as minimatch from "minimatch";
 import * as path from "path";
 import * as winston from "winston";
 
-import { DirectoryWalker } from "../src/DirectoryWalker";
-import { IWalkOptions, TIncludeThisPathFunction } from "../src/interfaces";
+import { DirectoryWalker } from "../src/lib/DirectoryWalker";
+import { IWalkOptions, TIncludeThisPathFunction } from "../src/lib/interfaces";
 
 interface IStubObject {
     [key: string]: sinon.SinonStub;

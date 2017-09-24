@@ -19,7 +19,7 @@ import {
     IDirectoryFlattenerOptions,
     IDirectoryFlattenerOptionsValidated,
     keysOfIDirectoryFlattenerOptions,
-} from "../src/interfaces";
+} from "../src/lib/interfaces";
 
 import {
     loggerStub,
@@ -29,7 +29,7 @@ import {
 const baseLogger = "baseLogger";
 const resolveStub = sinon.stub();
 
-const DirectoryFlattenerOptions = proxyquire("../src/DirectoryFlattenerOptions", {
+const DirectoryFlattenerOptions = proxyquire("../src/lib/DirectoryFlattenerOptions", {
     "./logger-singleton": {
         DEFAULT_CONSOLE_TRANSPORT_NAME: baseLogger,
         logger: loggerStub,
