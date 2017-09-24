@@ -10,8 +10,8 @@ import { IFlattenDirectoryOptionsValidated } from "./interfaces";
  * Validated options ready for use
  * @see flattenDirectory
  */
-function parseOptions(args?: any): IFlattenDirectoryOptionsValidated {
-    const optionsParser = new FlattenDirectoryOptions(args);
+function parseOptions(...args: any[]): IFlattenDirectoryOptionsValidated {
+    const optionsParser = new (FlattenDirectoryOptions as any)(...args);
     return optionsParser.options;
 }
 
