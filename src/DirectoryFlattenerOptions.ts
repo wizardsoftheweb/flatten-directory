@@ -4,9 +4,9 @@ import * as path from "path";
 import { DEFAULT_MAXDEPTH } from "./DirectoryWalker";
 import {
     IDefaultContainer,
-    IErrorMessageContainer,
     IDirectoryFlattenerOptions,
     IDirectoryFlattenerOptionsValidated,
+    IErrorMessageContainer,
     keysOfIDirectoryFlattenerOptions,
 } from "./interfaces";
 import {
