@@ -17,6 +17,7 @@ coverage
 logs
 docs
 dist
+wizards*.tgz
 # Personal working files (you might not need these)
 scratch.ts
 swap-out.log
