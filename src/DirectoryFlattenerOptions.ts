@@ -5,9 +5,9 @@ import { DEFAULT_MAXDEPTH } from "./DirectoryWalker";
 import {
     IDefaultContainer,
     IErrorMessageContainer,
-    IFlattenDirectoryOptions,
-    IFlattenDirectoryOptionsValidated,
-    keysOfIFlattenDirectoryOptions,
+    IDirectoryFlattenerOptions,
+    IDirectoryFlattenerOptionsValidated,
+    keysOfIDirectoryFlattenerOptions,
 } from "./interfaces";
 import {
     DEFAULT_CONSOLE_TRANSPORT_NAME,
@@ -19,9 +19,9 @@ import {
  * This class exists solely to wrap options methods into a test instance without
  * exposing all the individual components.
  *
- * @class FlattenDirectoryOptions
+ * @class DirectoryFlattenerOptions
  */
-export class FlattenDirectoryOptions {
+export class DirectoryFlattenerOptions {
     /**
      * Holds default values
      * @type {IDefaultContainer}
@@ -44,31 +44,31 @@ export class FlattenDirectoryOptions {
 
     /**
      * Holds the final options after validation
-     * @type {IFlattenDirectoryOptionsValidated}
+     * @type {IDirectoryFlattenerOptionsValidated}
      */
-    public options: IFlattenDirectoryOptionsValidated;
+    public options: IDirectoryFlattenerOptionsValidated;
 
     /**
      * Initializes the logger, assigns options, and validates input.
      *
      * The object has two signatures:
      * ```javascript
-     * new FlattenDirectoryOptions(options: IFlattenDirectoryOptions)
+     * new DirectoryFlattenerOptions(options: IDirectoryFlattenerOptions)
      * ```
      * or
      * ```javascript
-     * new FlattenDirectoryOptions([source: string[, target: string[, maxdepth: number]]])
+     * new DirectoryFlattenerOptions([source: string[, target: string[, maxdepth: number]]])
      * ```
      * An empty call will load defaults.
      *
-     * @param {string | IFlattenDirectoryOptions} source
+     * @param {string | IDirectoryFlattenerOptions} source
      * Either the options to use or the path to the source directory
      * @param {string}    target
      * The path to the target directory
      * @param {number}    maxdepth
      * The `maxdepth` to use
      */
-    constructor(source?: string | IFlattenDirectoryOptions, target?: string, maxdepth?: number) {
+    constructor(source?: string | IDirectoryFlattenerOptions, target?: string, maxdepth?: number) {
         this.setUpLogger(source);
         logger.info("Parsing options");
         this.options = this.validateOptions(this.assignOptions(source, target, maxdepth));
@@ -80,7 +80,7 @@ export class FlattenDirectoryOptions {
      *
      * @param {any} args
      * Either an objecting containing logger options from
-     * `IFlattenDirectoryOptions` or something else
+     * `IDirectoryFlattenerOptions` or something else
      */
     private setUpLogger(args: any = {}): void {
         if (typeof args.silent === "undefined" || args.silent === true) {
@@ -105,18 +105,18 @@ export class FlattenDirectoryOptions {
      *
      * @param  {any}        options
      * The potential options to clean
-     * @return {IFlattenDirectoryOptions}
-     * A complete `IFlattenDirectoryOptions` with default values
+     * @return {IDirectoryFlattenerOptions}
+     * A complete `IDirectoryFlattenerOptions` with default values
      */
-    private cleanOptions(options: any = {}): IFlattenDirectoryOptions {
+    private cleanOptions(options: any = {}): IDirectoryFlattenerOptions {
         const cleanedOptions = {} as any;
-        for (const key of keysOfIFlattenDirectoryOptions) {
+        for (const key of keysOfIDirectoryFlattenerOptions) {
             if (typeof options[key] !== "undefined") {
                 logger.silly(`Found option ${key} with value ${options[key]}`);
                 cleanedOptions[key] = options[key] as any;
             } else {
-                logger.silly(`Using default option ${key} ${FlattenDirectoryOptions.DEFAULT[key.toUpperCase()]}`);
-                cleanedOptions[key] = (FlattenDirectoryOptions.DEFAULT[key.toUpperCase()] as any);
+                logger.silly(`Using default option ${key} ${DirectoryFlattenerOptions.DEFAULT[key.toUpperCase()]}`);
+                cleanedOptions[key] = (DirectoryFlattenerOptions.DEFAULT[key.toUpperCase()] as any);
             }
         }
         return cleanedOptions;
@@ -126,18 +126,18 @@ export class FlattenDirectoryOptions {
      * Either chooses to clean the options input or assigns defaults
      * @param  {any[]}                    ...args
      * The options or possible input
-     * @return {IFlattenDirectoryOptions}
-     * A complete `IFlattenDirectoryOptions` with default values
+     * @return {IDirectoryFlattenerOptions}
+     * A complete `IDirectoryFlattenerOptions` with default values
      */
-    private assignOptions(...args: any[]): IFlattenDirectoryOptions {
+    private assignOptions(...args: any[]): IDirectoryFlattenerOptions {
         logger.verbose("Parsing options");
-        const options: IFlattenDirectoryOptions = {};
+        const options: IDirectoryFlattenerOptions = {};
         if (typeof args[0] === "object") {
             return this.cleanOptions(args[0]);
         }
-        options.source = args[0] || FlattenDirectoryOptions.DEFAULT.SOURCE;
-        options.target = args[1] || FlattenDirectoryOptions.DEFAULT.TARGET;
-        options.maxdepth = args[2] || FlattenDirectoryOptions.DEFAULT.MAXDEPTH;
+        options.source = args[0] || DirectoryFlattenerOptions.DEFAULT.SOURCE;
+        options.target = args[1] || DirectoryFlattenerOptions.DEFAULT.TARGET;
+        options.maxdepth = args[2] || DirectoryFlattenerOptions.DEFAULT.MAXDEPTH;
         return options;
     }
 
@@ -150,8 +150,8 @@ export class FlattenDirectoryOptions {
      */
     private validateMaxdepth(maxdepth: any): void {
         if (typeof maxdepth !== "number") {
-            logger.error(FlattenDirectoryOptions.ERROR_MESSAGES.INVALID_MAXDEPTH);
-            throw new TypeError(FlattenDirectoryOptions.ERROR_MESSAGES.INVALID_MAXDEPTH);
+            logger.error(DirectoryFlattenerOptions.ERROR_MESSAGES.INVALID_MAXDEPTH);
+            throw new TypeError(DirectoryFlattenerOptions.ERROR_MESSAGES.INVALID_MAXDEPTH);
         }
         if (maxdepth < 0) {
             logger.warn(`Negative maxdepth (${maxdepth}) will find zero files`);
@@ -184,8 +184,8 @@ export class FlattenDirectoryOptions {
             );
             return absolutePath;
         } else {
-            logger.error(target + FlattenDirectoryOptions.ERROR_MESSAGES.INVALID_DIRECTORY);
-            throw new Error(target + FlattenDirectoryOptions.ERROR_MESSAGES.INVALID_DIRECTORY);
+            logger.error(target + DirectoryFlattenerOptions.ERROR_MESSAGES.INVALID_DIRECTORY);
+            throw new Error(target + DirectoryFlattenerOptions.ERROR_MESSAGES.INVALID_DIRECTORY);
         }
     }
 
@@ -193,18 +193,18 @@ export class FlattenDirectoryOptions {
      * Validates the given options and returns only the options necessary to
      * execute `flattenDirectory`.
      *
-     * @param  {IFlattenDirectoryOptions}          options
+     * @param  {IDirectoryFlattenerOptions}          options
      * Parsed options, either those passed in or the defaults
-     * @return {IFlattenDirectoryOptionsValidated}
+     * @return {IDirectoryFlattenerOptionsValidated}
      * A validated set of options that may immediately be used in
      * `flattenDirectory`
      * @see `flattenDirectory`
      */
-    private validateOptions(options: IFlattenDirectoryOptions): IFlattenDirectoryOptionsValidated {
+    private validateOptions(options: IDirectoryFlattenerOptions): IDirectoryFlattenerOptionsValidated {
         logger.verbose("Validating options");
         this.validateMaxdepth(options.maxdepth);
         options.source = this.validatePath("source", options.source!);
         options.target = this.validatePath("target", options.target!);
-        return options as IFlattenDirectoryOptionsValidated;
+        return options as IDirectoryFlattenerOptionsValidated;
     }
 }

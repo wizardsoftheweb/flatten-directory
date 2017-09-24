@@ -22,11 +22,11 @@ describe("parseOptions", (): void => {
 
     before((): void => {
         parseOptions = proxyquire("../src/parseOptions", {
-            "./FlattenDirectoryOptions": { FlattenDirectoryOptions: flattenStub },
+            "./DirectoryFlattenerOptions": { DirectoryFlattenerOptions: flattenStub },
         }).parseOptions;
     });
 
-    it("should create a FlattenDirectoryOptions object", (): void => {
+    it("should create a DirectoryFlattenerOptions object", (): void => {
         parseOptions({ silent: false });
         flattenStub.should.have.been.calledWithNew;
     });
