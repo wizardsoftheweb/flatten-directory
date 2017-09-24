@@ -79,12 +79,12 @@ export class DirectoryFlattener {
      */
     private copierFactory(target: string): TPromiseLikeCallback {
         return (filename: string) => {
-            return (this.readFile as any)(filename, "utf-8")
+            return (this.readFile as any)(filename, "utf8")
                 .then((data: any) => {
                     return (this.writeFile as any)(
                         path.join(target, path.basename(filename)),
                         data,
-                        "utf-8",
+                        "utf8",
                     );
                 });
         };
