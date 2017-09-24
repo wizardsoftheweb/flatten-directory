@@ -2,7 +2,7 @@ import * as Bluebird from "bluebird";
 import * as fs from "fs";
 import * as path from "path";
 
-import {DirectoryFlattener} from "./DirectoryFlattener";
+import { DirectoryFlattener } from "./DirectoryFlattener";
 
 /**
  * Functional wrapper for `DirectoryFlattener.flatten`. Creates a new instance

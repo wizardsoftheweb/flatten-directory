@@ -11,7 +11,7 @@ const should = chai.should();
 import * as Bluebird from "bluebird";
 import * as winston from "winston";
 
-import { logger } from "../src/logger-singleton";
+import { logger } from "../src/lib/logger-singleton";
 
 describe("DirectoryWalker", (): void => {
     it("should be a instance of winston Logger", (): void => {

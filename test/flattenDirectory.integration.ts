@@ -17,7 +17,7 @@ const rmrf = Bluebird.promisify(rimraf);
 
 const fsBluebird: any = Bluebird.promisifyAll(fs, { suffix: "Bluebird" });
 
-import { flattenDirectory } from "../src/flattenDirectory";
+import { flattenDirectory } from "../src/lib/flattenDirectory";
 
 // @todo test other files
 describe("Verbose flattenDirectory Integration", (): void => {

@@ -15,6 +15,8 @@ import * as Bluebird from "bluebird";
 import * as fs from "fs";
 import * as winston from "winston";
 
+import { TPromiseLikeCallback } from "../src/lib/interfaces";
+
 import {
     loggerStub,
     resetLoggerStub,
@@ -35,7 +37,7 @@ const options = {
     target: dummyArgs[1] + "/qqq",
 };
 
-const DirectoryFlattener = proxyquire("../src/DirectoryFlattener", {
+const DirectoryFlattener = proxyquire("../src/lib/DirectoryFlattener", {
     "./DirectoryFlattenerOptions": {
         DirectoryFlattenerOptions: optionsStub.returns({ options }),
     },
@@ -52,6 +54,7 @@ const DirectoryFlattener = proxyquire("../src/DirectoryFlattener", {
         basename: basenameStub,
         join: joinStub,
         resolve: resolveStub,
+        sep: "/",
     },
 }).DirectoryFlattener;
 
@@ -106,24 +109,36 @@ describe("DirectoryFlattener", (): void => {
     describe("copierFactory", (): void => {
         let readStub: sinon.SinonStub;
         let writeStub: sinon.SinonStub;
+        let copyFunction: TPromiseLikeCallback;
 
         beforeEach((): void => {
+            resetLoggerStub();
             factoryStub.restore();
             readStub = sinon.stub(flattener as any, "readFile").returns(Bluebird.resolve());
             writeStub = sinon.stub(flattener as any, "writeFile").returns(Bluebird.resolve());
             joinStub.reset();
             basenameStub.reset();
+            copyFunction = (flattener as any).copierFactory(options.target);
         });
 
-        it("should create a proper i/o chain", (): Bluebird<void> => {
-            const copyFunction = (flattener as any).copierFactory(options.target);
+        it("should create a proper i/o chain", (): PromiseLike<void> => {
             return copyFunction("/path/to/input")
                 .then(() => {
+                    loggerStub.warn.should.not.have.been.called;
                     readStub.should.have.been.calledOnce;
                     writeStub.should.have.been.calledOnce;
                     writeStub.should.have.been.calledAfter(readStub);
                     joinStub.should.have.been.calledOnce;
-                    basenameStub.should.have.been.calledOnce;
+                    basenameStub.should.have.been.calledTwice;
+                });
+        });
+
+        it("should warn when files will be clobbered", (): PromiseLike<void> => {
+            basenameStub.returns("input");
+            (flattener as any).writtenFiles = { input: "/path/to/source" };
+            return copyFunction("/path/to/input")
+                .then(() => {
+                    loggerStub.warn.should.have.been.calledOnce;
                 });
         });
 

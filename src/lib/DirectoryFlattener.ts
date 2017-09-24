@@ -31,6 +31,8 @@ export class DirectoryFlattener {
     private readFile: any = Bluebird.promisify(fs.readFile);
     /** Promisified `writeFile`, exposable for testing */
     private writeFile: any = Bluebird.promisify(fs.writeFile);
+    /** Contains (target basename, original path) pairs */
+    private writtenFiles: { [basename: string]: string } = {};
 
     /**
      * Parses the passed-in `flattenDirectory` options and sets up a directory
@@ -79,12 +81,17 @@ export class DirectoryFlattener {
      */
     private copierFactory(target: string): TPromiseLikeCallback {
         return (filename: string) => {
-            return (this.readFile as any)(filename, "utf8")
+            const basename = path.basename(filename);
+            if (typeof this.writtenFiles[basename] === "string") {
+                logger.warn(`${target}${path.sep}${basename} already written; overwriting with ${filename}`);
+            }
+            this.writtenFiles[basename] = filename;
+            return (this.readFile as any)(filename, this.flattenerOptions.options.encoding)
                 .then((data: any) => {
                     return (this.writeFile as any)(
                         path.join(target, path.basename(filename)),
                         data,
-                        "utf8",
+                        this.flattenerOptions.options.encoding,
                     );
                 });
         };
